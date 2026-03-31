@@ -51,6 +51,7 @@ public class BancoADNUI extends JFrame {
 
         // Área de salida
         areaSalida = new JTextArea();
+        areaSalida.setEditable(false);
         add(new JScrollPane(areaSalida), BorderLayout.SOUTH);
 
         // Eventos
@@ -89,7 +90,7 @@ public class BancoADNUI extends JFrame {
             String id = txtId.getText();
 
             if (banco.eliminarPerfil(id)) {
-                areaSalida.setText("Perfil eliminado (baja lógica)");
+                areaSalida.setText("Perfil eliminado");
             } else {
                 areaSalida.setText("No se pudo eliminar");
             }
