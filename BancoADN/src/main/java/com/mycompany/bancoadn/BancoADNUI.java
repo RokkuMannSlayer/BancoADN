@@ -97,7 +97,4 @@ public class BancoADNUI extends JFrame {
         });
     }
 
-    public static void main(String[] args) {
-        new BancoADNUI().setVisible(true);
-    }
 }
