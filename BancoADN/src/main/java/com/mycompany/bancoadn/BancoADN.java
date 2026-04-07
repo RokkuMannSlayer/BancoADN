@@ -67,7 +67,7 @@ public class BancoADN {
 
     public static void main(String[] args) {
         
-        new BancoADNUI().setVisible(true);
+        new Sign().setVisible(true);
 
         BancoADN banco = new BancoADN();
 

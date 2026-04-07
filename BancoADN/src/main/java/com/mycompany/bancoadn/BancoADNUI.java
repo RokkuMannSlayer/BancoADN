@@ -13,7 +13,7 @@ public class BancoADNUI extends JFrame {
 
     public BancoADNUI() {
         setTitle("Banco de ADN");
-        setSize(500, 400);
+        setSize(1100, 700);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
