@@ -67,7 +67,7 @@ public class BancoADN {
 
     public static void main(String[] args) {
         
-        new Sign().setVisible(true);
+        new Sign.Login().setVisible(true);
 
         BancoADN banco = new BancoADN();
 

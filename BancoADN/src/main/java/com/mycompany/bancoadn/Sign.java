@@ -15,6 +15,7 @@ public class Sign{
         private JTextField txtUsuario;
         private JPasswordField txtPassword;
         private JButton btnLogin;
+        private JButton btnBack;
     
         public Login() {
         
@@ -32,7 +33,7 @@ public class Sign{
             JLabel lblTitulo = new JLabel("Iniciar Sesión", SwingConstants.CENTER);
             lblTitulo.setIcon(new ImageIcon("C:\\Users\\facun\\OneDrive\\Documents\\GitHub\\BancoADN\\BancoADN\\DNA.png"));
             lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 22));
-            lblTitulo.setForeground(Color.RED);
+            lblTitulo.setForeground(Color.WHITE);
 
             JPanel form = new JPanel(new GridLayout(2, 2, 10, 10));
 
@@ -50,10 +51,33 @@ public class Sign{
             btnLogin.setFocusPainted(false);
 
             btnLogin.addActionListener((ActionEvent e) -> autenticarLogin());
-
-            panel.add(lblTitulo, BorderLayout.NORTH);
-            panel.add(form, BorderLayout.CENTER);
-            panel.add(btnLogin, BorderLayout.SOUTH);
+            
+            btnBack = new JButton("Regresar");
+            btnBack.setBackground(Color.RED);
+            btnBack.setForeground(Color.BLACK);
+            btnBack.setFocusPainted(false);
+            
+            btnBack.addActionListener((ActionEvent e) -> this.setVisible(false));
+            
+            JPanel topPanel = new JPanel(new BorderLayout());
+            topPanel.setOpaque(false);
+            
+            JPanel bottomPanel = new JPanel(new BorderLayout());
+            bottomPanel.setOpaque(false);
+            
+            JPanel ttlPanel = new JPanel(new BorderLayout());
+            ttlPanel.setOpaque(false);
+            
+            topPanel.add(btnBack, BorderLayout.WEST);
+            
+            ttlPanel.add(lblTitulo, BorderLayout.NORTH);
+            
+            panel.add(topPanel, BorderLayout.NORTH);
+            panel.add(ttlPanel, BorderLayout.CENTER);
+            panel.add(bottomPanel, BorderLayout.SOUTH);
+            
+            bottomPanel.add(form, BorderLayout.NORTH);
+            bottomPanel.add(btnLogin, BorderLayout.SOUTH);
 
             add(panel);
         }
