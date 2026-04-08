@@ -7,15 +7,76 @@ import java.awt.event.ActionEvent;
 
 public class Sign{
     
+    static JTextField txtUsuario;
+    static JPasswordField txtPassword;
+    static JButton btnBack;
+    
+    static class signMenu extends JFrame {
+        
+        private JButton login;
+        private JButton register;
+        private JButton exit;
+        
+        public signMenu() {
+            
+            setTitle("Banco de ADN - Inicio");
+            setSize(700, 480);
+            setLocationRelativeTo(null);
+            setDefaultCloseOperation(EXIT_ON_CLOSE);
+            setResizable(false);
+            
+            JPanel panel = new JPanel();
+            panel.setLayout(new BorderLayout());
+            panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+            panel.setBackground(Color.GRAY);
+            
+            JLabel iconTitle = new JLabel("", SwingConstants.CENTER);
+            iconTitle.setIcon(new ImageIcon("C:\\Users\\facun\\OneDrive\\Documents\\GitHub\\BancoADN\\BancoADN\\DNA.png"));
+            
+            login = new JButton("Iniciar Sesión");
+            login.setBackground(Color.BLUE);
+            login.setForeground(Color.WHITE);
+            login.setFocusPainted(false);
+            
+            login.addActionListener((ActionEvent e) -> {
+                this.dispose();
+                new Login().setVisible(true);
+            });
+            
+            register = new JButton("Registrar Usuario");
+            register.setBackground(Color.BLUE);
+            register.setForeground(Color.WHITE);
+            register.setFocusPainted(false);
+            
+            //
+            
+            exit = new JButton("Salir");
+            exit.setBackground(Color.RED);
+            exit.setForeground(Color.WHITE);
+            exit.setFocusPainted(false);
+            
+            exit.addActionListener((ActionEvent e) -> System.exit(0));
+            
+            JPanel btnPanel = new JPanel(new BorderLayout());
+            btnPanel.setOpaque(false);
+            
+            btnPanel.add(login, BorderLayout.NORTH);
+            btnPanel.add(register, BorderLayout.CENTER);
+            btnPanel.add(exit, BorderLayout.SOUTH);
+
+            panel.add(iconTitle, BorderLayout.NORTH);
+            panel.add(btnPanel, BorderLayout.CENTER);
+                    
+            add(panel);
+        }
+    }
+    
     static class Login extends JFrame {
         
         // Nota: Agregar un menú que indique las opciones de "Login" y "Registrar Usuario"
         // SOLO SE PUEDEN REGISTRAR CLIENTES, LOS ADMINISTRADORES SERÁN PURA Y EXCLUSIVAMENTE CREADOS EN LA BASE DE DATOS
         
-        private JTextField txtUsuario;
-        private JPasswordField txtPassword;
         private JButton btnLogin;
-        private JButton btnBack;
     
         public Login() {
         
@@ -30,7 +91,7 @@ public class Sign{
             panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
             panel.setBackground(Color.GRAY);
 
-            JLabel lblTitulo = new JLabel("Iniciar Sesión", SwingConstants.CENTER);
+            JLabel lblTitulo = new JLabel("Iniciar Sesión\n", SwingConstants.CENTER);
             lblTitulo.setIcon(new ImageIcon("C:\\Users\\facun\\OneDrive\\Documents\\GitHub\\BancoADN\\BancoADN\\DNA.png"));
             lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 22));
             lblTitulo.setForeground(Color.WHITE);
@@ -47,17 +108,20 @@ public class Sign{
 
             btnLogin = new JButton("Ingresar");
             btnLogin.setBackground(Color.BLUE);
-            btnLogin.setForeground(Color.BLACK);
+            btnLogin.setForeground(Color.WHITE);
             btnLogin.setFocusPainted(false);
 
             btnLogin.addActionListener((ActionEvent e) -> autenticarLogin());
             
             btnBack = new JButton("Regresar");
             btnBack.setBackground(Color.RED);
-            btnBack.setForeground(Color.BLACK);
+            btnBack.setForeground(Color.WHITE);
             btnBack.setFocusPainted(false);
             
-            btnBack.addActionListener((ActionEvent e) -> this.setVisible(false));
+            btnBack.addActionListener((ActionEvent e) -> {
+                this.dispose();
+                new signMenu().setVisible(true);
+            });
             
             JPanel topPanel = new JPanel(new BorderLayout());
             topPanel.setOpaque(false);
