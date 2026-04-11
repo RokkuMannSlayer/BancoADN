@@ -28,7 +28,7 @@ public class Sign{
             JPanel panel = new JPanel();
             panel.setLayout(new BorderLayout());
             panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-            panel.setBackground(Color.GRAY);
+            panel.setBackground(Color.DARK_GRAY);
             
             JLabel iconTitle = new JLabel("", SwingConstants.CENTER);
             iconTitle.setIcon(new ImageIcon("C:\\Users\\facun\\OneDrive\\Documents\\GitHub\\BancoADN\\BancoADN\\DNA.png"));
@@ -89,7 +89,7 @@ public class Sign{
             JPanel panel = new JPanel();
             panel.setLayout(new BorderLayout());
             panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-            panel.setBackground(Color.GRAY);
+            panel.setBackground(Color.DARK_GRAY);
 
             JLabel lblTitulo = new JLabel("Iniciar Sesión\n", SwingConstants.CENTER);
             lblTitulo.setIcon(new ImageIcon("C:\\Users\\facun\\OneDrive\\Documents\\GitHub\\BancoADN\\BancoADN\\DNA.png"));
@@ -164,7 +164,15 @@ public class Sign{
         }
     }
     
-    
+    static class Register extends JFrame {
+        
+        public Register() {
+            
+            
+            
+        }
+        
+    }
         
     
     
