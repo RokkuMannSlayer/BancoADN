@@ -28,10 +28,10 @@ public class Sign{
             JPanel panel = new JPanel();
             panel.setLayout(new BorderLayout());
             panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-            panel.setBackground(Color.DARK_GRAY);
+            panel.setBackground(Color.BLACK);
             
             JLabel iconTitle = new JLabel("", SwingConstants.CENTER);
-            iconTitle.setIcon(new ImageIcon("C:\\Users\\facun\\OneDrive\\Documents\\GitHub\\BancoADN\\BancoADN\\DNA.png"));
+            iconTitle.setIcon(new ImageIcon("C:\\Users\\facun\\OneDrive\\Documents\\GitHub\\BancoADN\\BancoADN\\dna_146c.gif"));
             
             login = new JButton("Iniciar Sesión");
             login.setBackground(Color.BLUE);
@@ -89,10 +89,10 @@ public class Sign{
             JPanel panel = new JPanel();
             panel.setLayout(new BorderLayout());
             panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-            panel.setBackground(Color.DARK_GRAY);
+            panel.setBackground(Color.BLACK);
 
             JLabel lblTitulo = new JLabel("Iniciar Sesión\n", SwingConstants.CENTER);
-            lblTitulo.setIcon(new ImageIcon("C:\\Users\\facun\\OneDrive\\Documents\\GitHub\\BancoADN\\BancoADN\\DNA.png"));
+            lblTitulo.setIcon(new ImageIcon("C:\\Users\\facun\\OneDrive\\Documents\\GitHub\\BancoADN\\BancoADN\\dna_146c.gif"));
             lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 22));
             lblTitulo.setForeground(Color.WHITE);
 
