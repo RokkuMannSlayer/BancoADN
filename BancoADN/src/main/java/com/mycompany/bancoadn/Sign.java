@@ -43,7 +43,7 @@ public class Sign{
                 new Login().setVisible(true);
             });
             
-            register = new JButton("Registrar Usuario");
+            register = new JButton("Registrar Perfíl");
             register.setBackground(Color.BLUE);
             register.setForeground(Color.WHITE);
             register.setFocusPainted(false);
