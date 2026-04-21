@@ -1,89 +1,104 @@
 package com.mycompany.bancoadn;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.sql.*;
 
 public class BancoADN {
 
-    private Map<String, PerfilADN> perfiles;
+    // 🔹 REGISTRAR PERFIL (CLIENTE)
+    public String registrarPerfil(int idCliente, String descripcion) {
+        try {
+            Connection con = ConexionBD.conectar();
 
-    public BancoADN() {
-        perfiles = new HashMap<>();
-    }
+            CallableStatement cs = con.prepareCall("{CALL RegistrarPerfil(?, ?, ?)}");
+            cs.setString(1, descripcion);
+            cs.setInt(2, idCliente);
+            cs.setInt(3, 1);
 
-    public boolean registrarPerfil(String id, String nombre, String descripcion) {
+            ResultSet rs = cs.executeQuery();
 
-        if (id == null || id.isEmpty()) {
-            System.out.println("Error: ID inválido");
-            return false;
-        }
-
-        if (perfiles.containsKey(id)) {
-            System.out.println("Error: ID ya existe");
-            return false;
-        }
-
-        PerfilADN nuevo = new PerfilADN(id, nombre, descripcion);
-        perfiles.put(id, nuevo);
-
-        return true;
-    }
-
-    public PerfilADN consultarPerfil(String id) {
-        return perfiles.get(id);
-    }
-
-    public void listarPerfiles() {
-        if (perfiles.isEmpty()) {
-            System.out.println("No hay perfiles registrados.");
-            return;
-        }
-
-        for (PerfilADN perfil : perfiles.values()) {
-            System.out.println(perfil);
-        }
-    }
-
-    public boolean eliminarPerfil(String id) {
-        PerfilADN perfil = perfiles.get(id);
-
-        if (perfil != null && perfil.isActivo()) {
-            perfil.eliminar();
-            return true;
-        }
-
-        return false;
-    }
-    public Map<String, PerfilADN> getPerfiles() {
-        return perfiles;
-    }
-    public void listarActivos() {
-        for (PerfilADN perfil : perfiles.values()) {
-            if (perfil.isActivo()) {
-                System.out.println(perfil);
+            if (rs.next()) {
+                return rs.getString("mensaje");
             }
+
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
+        }
+        return "Error";
+    }
+
+    // 🔹 CONSULTAR PERFIL CLIENTE
+    public String consultarPerfilCliente(int idCliente) {
+        StringBuilder resultado = new StringBuilder();
+
+        try {
+            Connection con = ConexionBD.conectar();
+
+            CallableStatement cs = con.prepareCall("{CALL ConsultarPerfilCliente(?)}");
+            cs.setInt(1, idCliente);
+
+            ResultSet rs = cs.executeQuery();
+
+            if (rs.next()) {
+                resultado.append("ID Perfil: ").append(rs.getInt("IDperfil"))
+                        .append("\nDescripción: ").append(rs.getString("Descripcion"))
+                        .append("\nEstado: ").append(rs.getString("Estado"))
+                        .append("\nCliente: ").append(rs.getString("Nombre_cliente"))
+                        .append("\nDNI: ").append(rs.getString("DNI_cliente"));
+            } else {
+                return "No tiene perfil";
+            }
+
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
+        }
+
+        return resultado.toString();
+    }
+
+    // 🔹 LISTAR PERFILES (ADMIN)
+    public ResultSet listarPerfiles() {
+        try {
+            Connection con = ConexionBD.conectar();
+            CallableStatement cs = con.prepareCall("{CALL ListarPerfiles()}");
+            return cs.executeQuery();
+
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
         }
     }
 
-    public static void main(String[] args) {
-        
-        new Sign.signMenu().setVisible(true);
+    // 🔹 CONSULTAR TODOS LOS PERFILES (ADMIN)
+    public ResultSet consultarTodosPerfiles() {
+        try {
+            Connection con = ConexionBD.conectar();
+            CallableStatement cs = con.prepareCall("{CALL ConsultarTodosPerfiles()}");
+            return cs.executeQuery();
 
-        BancoADN banco = new BancoADN();
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
+    }
 
-        banco.registrarPerfil("001", "Juan", "Perfil A");
-        banco.registrarPerfil("002", "Ana", "Perfil B");
+    // 🔹 ELIMINAR PERFIL
+    public String eliminarPerfil(int idPerfil) {
+        try {
+            Connection con = ConexionBD.conectar();
 
-        System.out.println("\n--- LISTA ---");
-        banco.listarPerfiles();
+            CallableStatement cs = con.prepareCall("{CALL EliminarPerfil(?)}");
+            cs.setInt(1, idPerfil);
 
-        System.out.println("\n--- CONSULTA ---");
-        System.out.println(banco.consultarPerfil("001"));
+            ResultSet rs = cs.executeQuery();
 
-        System.out.println("\n--- ELIMINAR ---");
-        banco.eliminarPerfil("001");
+            if (rs.next()) {
+                return rs.getString("mensaje");
+            }
 
-        System.out.println("\n--- LISTA FINAL ---");
-        banco.listarPerfiles();
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
+        }
+
+        return "Error";
     }
 }
