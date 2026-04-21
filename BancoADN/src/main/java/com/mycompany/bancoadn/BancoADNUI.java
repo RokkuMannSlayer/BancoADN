@@ -2,203 +2,99 @@ package com.mycompany.bancoadn;
 
 import javax.swing.*;
 import java.awt.*;
-import java.sql.ResultSet;
+import java.awt.event.*;
 
 public class BancoADNUI extends JFrame {
 
     private BancoADN banco = new BancoADN();
+
+    private JTextField txtId, txtNombre, txtDescripcion;
     private JTextArea areaSalida;
 
-    private String rol;
-    private int idUsuario;
-
-    public BancoADNUI(String rol, int idUsuario) {
-
-        this.rol = rol;
-        this.idUsuario = idUsuario;
-
+    public BancoADNUI() {
         setTitle("Banco de ADN");
-        setSize(800, 500);
+        setSize(1100, 700);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        getContentPane().setBackground(Color.BLACK);
+        // Panel de entrada
+        JPanel panelInput = new JPanel(new GridLayout(3, 2));
 
+        panelInput.add(new JLabel("ID:"));
+        txtId = new JTextField();
+        panelInput.add(txtId);
+
+        panelInput.add(new JLabel("Nombre:"));
+        txtNombre = new JTextField();
+        panelInput.add(txtNombre);
+
+        panelInput.add(new JLabel("Descripción:"));
+        txtDescripcion = new JTextField();
+        panelInput.add(txtDescripcion);
+
+        add(panelInput, BorderLayout.NORTH);
+
+        // Panel de botones
         JPanel panelBotones = new JPanel();
-        panelBotones.setBackground(Color.BLACK);
 
-        if (rol.equals("CLIENTE")) {
+        JButton btnRegistrar = new JButton("Registrar");
+        JButton btnConsultar = new JButton("Consultar");
+        JButton btnListar = new JButton("Listar");
+        JButton btnEliminar = new JButton("Eliminar");
 
-            JTextField txtDescripcion = new JTextField(20);
-
-            JButton btnRegistrar = boton("Registrar Perfil");
-            JButton btnConsultar = boton("Consultar Mi Perfil");
-
-            panelBotones.add(txtDescripcion);
-
-            btnRegistrar.addActionListener(e -> {
-                areaSalida.setText(
-                        banco.registrarPerfil(idUsuario, txtDescripcion.getText())
-                );
-            });
-
-            btnConsultar.addActionListener(e -> {
-                areaSalida.setText(
-                        banco.consultarPerfilCliente(idUsuario)
-                );
-            });
-
-            panelBotones.add(btnRegistrar);
-            panelBotones.add(btnConsultar);
-
-        } else {
-
-            JButton btnListar = boton("Listar Perfiles");
-            JButton btnConsultar = boton("Consultar Perfiles");
-            JButton btnEliminar = boton("Eliminar Perfiles");
-
-            // 🔹 LISTAR (solo tabla)
-            btnListar.addActionListener(e
-                    -> abrirTablaSimple(banco.listarPerfiles(), "Lista de Perfiles")
-            );
-
-            // 🔹 CONSULTAR (tabla completa)
-            btnConsultar.addActionListener(e
-                    -> abrirTablaSimple(banco.consultarTodosPerfiles(), "Consulta de Perfiles")
-            );
-
-            // 🔴 ELIMINAR (ventana separada)
-            btnEliminar.addActionListener(e
-                    -> abrirVentanaEliminar()
-            );
-
-            panelBotones.add(btnListar);
-            panelBotones.add(btnConsultar);
-            panelBotones.add(btnEliminar);
-        }
+        panelBotones.add(btnRegistrar);
+        panelBotones.add(btnConsultar);
+        panelBotones.add(btnListar);
+        panelBotones.add(btnEliminar);
 
         add(panelBotones, BorderLayout.CENTER);
 
+        // Área de salida
         areaSalida = new JTextArea();
-        areaSalida.setBackground(Color.BLACK);
-        areaSalida.setForeground(Color.WHITE);
-
+        areaSalida.setEditable(false);
         add(new JScrollPane(areaSalida), BorderLayout.SOUTH);
-    }
 
-    // =========================
-    // TABLA SIMPLE (SIN ACCIONES)
-    // =========================
-    private void abrirTablaSimple(ResultSet rs, String titulo) {
+        // Eventos
 
-        try {
-            String[] columnas = {"ID", "Cliente", "DNI", "Descripción", "Estado", "Admin"};
+        btnRegistrar.addActionListener(e -> {
+            String id = txtId.getText();
+            String nombre = txtNombre.getText();
+            String desc = txtDescripcion.getText();
 
-            javax.swing.table.DefaultTableModel modelo
-                    = new javax.swing.table.DefaultTableModel(columnas, 0);
-
-            while (rs.next()) {
-                Object[] fila = {
-                    rs.getInt("IDperfil"),
-                    rs.getString("Nombre_cliente"),
-                    rs.getString("DNI_cliente"),
-                    rs.getString("Descripcion"),
-                    rs.getString("Estado"),
-                    rs.getString("Nombre_admin")
-                };
-                modelo.addRow(fila);
+            if (banco.registrarPerfil(id, nombre, desc)) {
+                areaSalida.setText("Perfil registrado correctamente");
+            } else {
+                areaSalida.setText("Error: ID duplicado");
             }
+        });
 
-            JTable tabla = new JTable(modelo);
-            tabla.setBackground(Color.BLACK);
-            tabla.setForeground(Color.WHITE);
+        btnConsultar.addActionListener(e -> {
+            String id = txtId.getText();
+            PerfilADN perfil = banco.consultarPerfil(id);
 
-            JScrollPane scroll = new JScrollPane(tabla);
-
-            JFrame ventana = new JFrame(titulo);
-            ventana.setSize(700, 400);
-            ventana.add(scroll);
-            ventana.setLocationRelativeTo(null);
-            ventana.setVisible(true);
-
-        } catch (Exception e) {
-            areaSalida.setText("Error al mostrar datos: " + e.getMessage());
-        }
-    }
-
-    // =========================
-    // VENTANA ELIMINAR
-    // =========================
-    private void abrirVentanaEliminar() {
-
-        try {
-            ResultSet rs = banco.listarPerfiles();
-
-            String[] columnas = {"ID", "Cliente", "DNI", "Descripción", "Estado", "Admin"};
-
-            javax.swing.table.DefaultTableModel modelo
-                    = new javax.swing.table.DefaultTableModel(columnas, 0);
-
-            while (rs.next()) {
-                Object[] fila = {
-                    rs.getInt("IDperfil"),
-                    rs.getString("Nombre_cliente"),
-                    rs.getString("DNI_cliente"),
-                    rs.getString("Descripcion"),
-                    rs.getString("Estado"),
-                    rs.getString("Nombre_admin")
-                };
-                modelo.addRow(fila);
+            if (perfil != null) {
+                areaSalida.setText(perfil.toString());
+            } else {
+                areaSalida.setText("Perfil no encontrado");
             }
+        });
 
-            JTable tabla = new JTable(modelo);
-            tabla.setBackground(Color.BLACK);
-            tabla.setForeground(Color.WHITE);
+        btnListar.addActionListener(e -> {
+            areaSalida.setText("");
+            for (PerfilADN p : banco.getPerfiles().values()) {
+                areaSalida.append(p.toString() + "\n");
+            }
+        });
 
-            JScrollPane scroll = new JScrollPane(tabla);
+        btnEliminar.addActionListener(e -> {
+            String id = txtId.getText();
 
-            JButton btnEliminar = new JButton("Eliminar Seleccionado");
-            btnEliminar.setBackground(Color.RED);
-            btnEliminar.setForeground(Color.WHITE);
-
-            btnEliminar.addActionListener(e -> {
-
-                int fila = tabla.getSelectedRow();
-
-                if (fila == -1) {
-                    JOptionPane.showMessageDialog(null, "Seleccione un perfil");
-                    return;
-                }
-
-                int idPerfil = (int) tabla.getValueAt(fila, 0);
-
-                String res = banco.eliminarPerfil(idPerfil);
-
-                JOptionPane.showMessageDialog(null, res);
-
-                // eliminar de la tabla visual
-                ((javax.swing.table.DefaultTableModel) tabla.getModel()).removeRow(fila);
-            });
-
-            JFrame ventana = new JFrame("Eliminar Perfiles");
-            ventana.setSize(800, 400);
-            ventana.setLayout(new BorderLayout());
-
-            ventana.add(scroll, BorderLayout.CENTER);
-            ventana.add(btnEliminar, BorderLayout.SOUTH);
-
-            ventana.setLocationRelativeTo(null);
-            ventana.setVisible(true);
-
-        } catch (Exception e) {
-            areaSalida.setText("Error al abrir eliminación: " + e.getMessage());
-        }
+            if (banco.eliminarPerfil(id)) {
+                areaSalida.setText("Perfil eliminado");
+            } else {
+                areaSalida.setText("No se pudo eliminar");
+            }
+        });
     }
 
-    private JButton boton(String txt) {
-        JButton b = new JButton(txt);
-        b.setBackground(Color.BLUE);
-        b.setForeground(Color.WHITE);
-        return b;
-    }
 }
