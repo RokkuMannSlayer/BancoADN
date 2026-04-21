@@ -161,7 +161,7 @@ public class Sign{
             else {
                 JOptionPane.showMessageDialog(this, "Bienvenido "+ usuario);
             
-                new BancoADNUI().setVisible(true);
+                
                 dispose();
             }
         }
