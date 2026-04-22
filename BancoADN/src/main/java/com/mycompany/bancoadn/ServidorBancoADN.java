@@ -2,10 +2,14 @@ package com.mycompany.bancoadn;
 
 import java.io.*;
 import java.net.*;
+import java.util.Set;
+import java.util.HashSet;
 import java.sql.ResultSet;
 import javax.swing.SwingUtilities;
 
 public class ServidorBancoADN {
+    
+    public static Set<String> clientesConectados = new HashSet<>();
 
     public static void main(String[] args) {
         
@@ -29,11 +33,11 @@ public class ServidorBancoADN {
     }
 }
 
-// 🔹 HILO PARA CADA CLIENTE
 class HiloCliente extends Thread {
 
     private Socket socket;
     private BancoADN banco = new BancoADN();
+    private String usuario = "Desconocido";
 
     public HiloCliente(Socket socket) {
         this.socket = socket;
@@ -51,14 +55,19 @@ class HiloCliente extends Thread {
             // 🔥 LOGIN
             if (comando.startsWith("LOGIN")) {
                 String[] datos = comando.split(",");
-                String user = datos[1];
-                String pass = datos[2];
+                usuario = datos[1];
 
-                String resultado = LoginRemoto.login(user, pass);
+                // AGREGAR USUARIO
+                ServidorBancoADN.clientesConectados.add(usuario);
+                mostrarClientes();
+
+                String pass = datos[2];
+                String resultado = LoginRemoto.login(usuario, pass);
+
                 salida.println(resultado);
             }
 
-            // 🔥 REGISTRAR PERFIL
+            // 🔥 REGISTRAR
             else if (comando.startsWith("REGISTRAR")) {
                 String[] datos = comando.split(",");
                 int id = Integer.parseInt(datos[1]);
@@ -67,16 +76,27 @@ class HiloCliente extends Thread {
                 salida.println(banco.registrarPerfil(id, desc));
             }
 
-            // 🔥 CONSULTAR PERFIL
+            // 🔥 CONSULTAR
             else if (comando.startsWith("CONSULTAR")) {
                 int id = Integer.parseInt(comando.split(",")[1]);
                 salida.println(banco.consultarPerfilCliente(id));
             }
 
-            socket.close();
-
         } catch (Exception e) {
             System.out.println("Error cliente: " + e.getMessage());
+        } finally {
+            // 🔴 CUANDO SE DESCONECTA
+            ServidorBancoADN.clientesConectados.remove(usuario);
+            mostrarClientes();
+
+            try {
+                socket.close();
+            } catch (Exception e) {}
         }
+    }
+
+    // 🔥 MOSTRAR CLIENTES EN CONSOLA
+    private void mostrarClientes() {
+        System.out.println("Usuarios conectados: " + ServidorBancoADN.clientesConectados);
     }
 }
