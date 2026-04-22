@@ -20,6 +20,7 @@ public class BancoADNUI extends JFrame {
         setTitle("Banco de ADN");
         setSize(800, 500);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
         setLayout(new BorderLayout());
         
         JLabel lblTitulo = new JLabel("", SwingConstants.CENTER);
