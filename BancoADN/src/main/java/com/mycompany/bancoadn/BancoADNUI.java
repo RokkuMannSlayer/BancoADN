@@ -41,15 +41,17 @@ public class BancoADNUI extends JFrame {
             panelBotones.add(txtDescripcion);
 
             btnRegistrar.addActionListener(e -> {
-                areaSalida.setText(
-                        banco.registrarPerfil(idUsuario, txtDescripcion.getText())
+                String res = ClienteSocket.enviar(
+                    "REGISTRAR," + idUsuario + "," + txtDescripcion.getText()
                 );
+                areaSalida.setText(res);
             });
 
             btnConsultar.addActionListener(e -> {
-                areaSalida.setText(
-                        banco.consultarPerfilCliente(idUsuario)
+                String res = ClienteSocket.enviar(
+                    "CONSULTAR," + idUsuario
                 );
+                areaSalida.setText(res);
             });
             
             add(lblTitulo, BorderLayout.NORTH);
