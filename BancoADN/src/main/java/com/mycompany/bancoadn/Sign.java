@@ -205,8 +205,92 @@ public class Sign {
     // REGISTER (NO IMPLEMENTADO)
     // =========================
     static class Register extends JFrame {
-
+        
+        private JTextField txtId, txtNombre, txtDni, txtMail;
+        private JPasswordField txtPass;
+        private JButton btnRegistrar, btnBack;
+        
         public Register() {
+            
+            setTitle("Banco de ADN - Registrar Perfil");
+            setSize(700, 540);
+            setLocationRelativeTo(null);
+            setDefaultCloseOperation(EXIT_ON_CLOSE);
+            setResizable(false);
+            
+            
+            JPanel panel = new JPanel(new BorderLayout());
+            panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+            panel.setBackground(Color.BLACK);
+            
+            JLabel titulo = new JLabel("Registrar Perfil", SwingConstants.CENTER);
+            titulo.setIcon(new ImageIcon("dna_146c.gif"));
+            titulo.setForeground(Color.WHITE);
+            titulo.setFont(new Font("Segoe UI", Font.BOLD, 22));
+            
+            JPanel form = new JPanel(new GridLayout(5, 2, 10, 10));
+
+            form.add(new JLabel("Nombre:"));
+            txtNombre = new JTextField();
+            form.add(txtNombre);
+
+            form.add(new JLabel("DNI:"));
+            txtDni = new JTextField();
+            form.add(txtDni);
+
+            form.add(new JLabel("Mail:"));
+            txtMail = new JTextField();
+            form.add(txtMail);
+
+            form.add(new JLabel("Contraseña:"));
+            txtPass = new JPasswordField();
+            form.add(txtPass);
+
+            btnRegistrar = new JButton("Registrar");
+            btnRegistrar.setBackground(Color.BLUE);
+            btnRegistrar.setForeground(Color.WHITE);
+            btnRegistrar.setFocusPainted(false);
+
+            btnRegistrar.addActionListener((ActionEvent e) -> registrarUsuario());
+
+            btnBack = new JButton("Regresar");
+            btnBack.setBackground(Color.RED);
+            btnBack.setForeground(Color.WHITE);
+            btnBack.setFocusPainted(false);
+            
+            btnBack.addActionListener((ActionEvent e) -> {
+            this.dispose();
+            new signMenu().setVisible(true);
+            });
+            
+            JPanel topPanel = new JPanel(new BorderLayout());
+            topPanel.setOpaque(false);
+            
+            topPanel.add(btnBack, BorderLayout.WEST);
+            
+            JPanel centerPanel = new JPanel(new BorderLayout());
+            centerPanel.setOpaque(false);
+            centerPanel.add(titulo, BorderLayout.NORTH);
+            centerPanel.add(form, BorderLayout.SOUTH);
+            
+            JPanel bottomPanel = new JPanel(new BorderLayout());
+            bottomPanel.setOpaque(false);
+            
+            bottomPanel.add(btnRegistrar, BorderLayout.SOUTH);
+            
+            panel.add(topPanel, BorderLayout.NORTH);
+            panel.add(centerPanel, BorderLayout.CENTER);
+            panel.add(bottomPanel, BorderLayout.SOUTH);
+
+            add(panel);
+        }
+        
+        //Modificar este void para Stored Procedure
+        private void registrarUsuario() {
+            
+            
+            new signMenu().setVisible(true);
+            dispose();
         }
     }
 }

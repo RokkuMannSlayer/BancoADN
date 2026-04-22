@@ -8,7 +8,7 @@ public class ConexionBD {
 
     private static final String URL = "jdbc:mysql://localhost:3306/banco_adn";
     private static final String USER = "root"; // cambiar si usás otro usuario
-    private static final String PASSWORD = "kaminoki"; // tu contraseña
+    private static final String PASSWORD = "Root1818"; // contraseña de Trigal: kaminoki
 
     public static Connection conectar() {
         try {

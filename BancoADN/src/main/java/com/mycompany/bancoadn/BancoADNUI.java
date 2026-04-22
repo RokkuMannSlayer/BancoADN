@@ -21,6 +21,9 @@ public class BancoADNUI extends JFrame {
         setSize(800, 500);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
+        
+        JLabel lblTitulo = new JLabel("", SwingConstants.CENTER);
+        lblTitulo.setIcon(new ImageIcon("dna_146c.gif"));
 
         getContentPane().setBackground(Color.BLACK);
 
@@ -47,6 +50,8 @@ public class BancoADNUI extends JFrame {
                         banco.consultarPerfilCliente(idUsuario)
                 );
             });
+            
+            add(lblTitulo, BorderLayout.NORTH);
 
             panelBotones.add(btnRegistrar);
             panelBotones.add(btnConsultar);
@@ -76,12 +81,15 @@ public class BancoADNUI extends JFrame {
             panelBotones.add(btnConsultar);
             panelBotones.add(btnEliminar);
         }
+        
+        add(lblTitulo, BorderLayout.NORTH);
 
         add(panelBotones, BorderLayout.CENTER);
 
         areaSalida = new JTextArea();
         areaSalida.setBackground(Color.BLACK);
         areaSalida.setForeground(Color.WHITE);
+        areaSalida.setPreferredSize(new Dimension(115, 115));
 
         add(new JScrollPane(areaSalida), BorderLayout.SOUTH);
     }
