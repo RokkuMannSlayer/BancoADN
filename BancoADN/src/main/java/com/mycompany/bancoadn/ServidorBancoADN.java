@@ -3,10 +3,16 @@ package com.mycompany.bancoadn;
 import java.io.*;
 import java.net.*;
 import java.sql.ResultSet;
+import javax.swing.SwingUtilities;
 
 public class ServidorBancoADN {
 
     public static void main(String[] args) {
+        
+        SwingUtilities.invokeLater(() -> {
+            new Sign.signMenu().setVisible(true);
+        });
+        
         int puerto = 5000;
 
         try (ServerSocket server = new ServerSocket(puerto)) {

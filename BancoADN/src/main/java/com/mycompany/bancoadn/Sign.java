@@ -158,6 +158,11 @@ public class Sign {
         // 🔐 LOGIN USANDO STORED PROCEDURE
         private void autenticarLogin() {
 
+            if (!ConexionInternet.hayInternet()) {
+                JOptionPane.showMessageDialog(this, "Sin conexión a Internet");
+                return;
+            }
+
             String usuario = txtUsuario.getText();
             String password = new String(txtPassword.getPassword());
 
@@ -166,42 +171,19 @@ public class Sign {
                 return;
             }
 
-            try {
-                Connection con = ConexionBD.conectar();
+            String respuesta = ClienteSocket.enviar("LOGIN," + usuario + "," + password);
 
-                CallableStatement cs = con.prepareCall("{CALL LoginUsuario(?, ?)}");
-                cs.setString(1, usuario);
-                cs.setString(2, password);
+            if (respuesta.startsWith("OK")) {
 
-                ResultSet rs = cs.executeQuery();
+                String[] datos = respuesta.split(",");
+                String tipo = datos[1];
+                int id = Integer.parseInt(datos[2]);
 
-                if (rs.next()) {
+                new BancoADNUI(tipo, id).setVisible(true);
+                dispose();
 
-                    String tipo = rs.getString("tipo");
-
-                    if (tipo.equals("CLIENTE") || tipo.equals("ADMIN")) {
-
-                        int id = rs.getInt("id");
-
-                        JOptionPane.showMessageDialog(this, "Bienvenido " + tipo);
-
-                        // 🔥 AQUÍ ESTÁ EL CAMBIO CLAVE
-                        new BancoADNUI(tipo, id).setVisible(true);
-
-                        dispose();
-
-                    } else {
-                        JOptionPane.showMessageDialog(this, "Credenciales incorrectas");
-                    }
-
-                } else {
-                    JOptionPane.showMessageDialog(this, "Error en login");
-                }
-
-                con.close();
-
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(this, "Error de conexión: " + e.getMessage());
+            } else {
+                JOptionPane.showMessageDialog(this, "Error: " + respuesta);
             }
         }
     }

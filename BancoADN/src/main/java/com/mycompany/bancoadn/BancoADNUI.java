@@ -41,9 +41,16 @@ public class BancoADNUI extends JFrame {
             panelBotones.add(txtDescripcion);
 
             btnRegistrar.addActionListener(e -> {
-                String res = ClienteSocket.enviar(
-                    "REGISTRAR," + idUsuario + "," + txtDescripcion.getText()
+
+            if (!ConexionInternet.hayInternet()) {
+                JOptionPane.showMessageDialog(null, "Sin conexión a Internet");
+                return;
+            }
+
+            String res = ClienteSocket.enviar(
+                "REGISTRAR," + idUsuario + "," + txtDescripcion.getText()
                 );
+
                 areaSalida.setText(res);
             });
 
