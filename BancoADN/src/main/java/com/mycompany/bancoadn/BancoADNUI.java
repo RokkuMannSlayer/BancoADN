@@ -48,17 +48,17 @@ public class BancoADNUI extends JFrame {
             }
 
             String res = ClienteSocket.enviar(
-                "REGISTRAR," + idUsuario + "," + txtDescripcion.getText()
+                "REGISTRAR," + idUsuario
                 );
 
-                areaSalida.setText(res);
+                areaSalida.setText(banco.registrarPerfil(idUsuario, txtDescripcion.getText()));
             });
 
             btnConsultar.addActionListener(e -> {
                 String res = ClienteSocket.enviar(
-                    "CONSULTAR," + idUsuario
+                    "CONSULTAR,"
                 );
-                areaSalida.setText(res);
+                areaSalida.setText(banco.consultarPerfilCliente(idUsuario));
             });
             
             add(lblTitulo, BorderLayout.NORTH);
@@ -73,19 +73,35 @@ public class BancoADNUI extends JFrame {
             JButton btnEliminar = boton("Eliminar Perfiles");
 
             // 🔹 LISTAR (solo tabla)
-            btnListar.addActionListener(e ->
-                    abrirTablaSimple(banco.listarPerfiles(), "Lista de Perfiles")
-            );
+            btnListar.addActionListener(e -> {
+                
+                if (!ConexionInternet.hayInternet()) {
+                    JOptionPane.showMessageDialog(null, "Sin conexión a Internet");
+                    return;
+                } else {
+                    abrirTablaSimple(banco.listarPerfiles(), "Lista de Perfiles");
+                }      
+            });
 
             // 🔹 CONSULTAR (tabla completa)
-            btnConsultar.addActionListener(e ->
-                    abrirTablaSimple(banco.consultarTodosPerfiles(), "Consulta de Perfiles")
-            );
+            btnConsultar.addActionListener(e -> {
+                if (!ConexionInternet.hayInternet()) {
+                    JOptionPane.showMessageDialog(null, "Sin conexión a Internet");
+                    return;
+                } else {
+                    abrirTablaSimple(banco.consultarTodosPerfiles(), "Consulta de Perfiles");
+                }
+            });
 
             // 🔴 ELIMINAR (ventana separada)
-            btnEliminar.addActionListener(e ->
-                    abrirVentanaEliminar()
-            );
+            btnEliminar.addActionListener(e -> {
+                if (!ConexionInternet.hayInternet()) {
+                    JOptionPane.showMessageDialog(null, "Sin conexión a Internet");
+                    return;
+                } else {
+                    abrirVentanaEliminar();
+                }
+            });
 
             panelBotones.add(btnListar);
             panelBotones.add(btnConsultar);
