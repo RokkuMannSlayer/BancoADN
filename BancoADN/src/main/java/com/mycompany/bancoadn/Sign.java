@@ -58,6 +58,11 @@ public class Sign {
             register = new JButton("Registrar Perfíl");
             register.setBackground(Color.BLUE);
             register.setForeground(Color.WHITE);
+            
+            register.addActionListener((ActionEvent e) -> {
+                this.dispose();
+                new Register().setVisible(true);
+            });
 
             exit = new JButton("Salir");
             exit.setBackground(Color.RED);
