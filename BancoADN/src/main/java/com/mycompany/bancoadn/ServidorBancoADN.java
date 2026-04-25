@@ -4,8 +4,6 @@ import java.io.*;
 import java.net.*;
 import java.util.Set;
 import java.util.HashSet;
-import java.sql.ResultSet;
-import javax.swing.SwingUtilities;
 
 public class ServidorBancoADN {
     
@@ -13,23 +11,28 @@ public class ServidorBancoADN {
 
     public static void main(String[] args) {
         
-        SwingUtilities.invokeLater(() -> {
-            new Sign.signMenu().setVisible(true);
-        });
-        
-        int puerto = 5000;
-
-        try (ServerSocket server = new ServerSocket(puerto)) {
-            System.out.println("Servidor iniciado en puerto " + puerto);
-
-            while (true) {
-                Socket cliente = server.accept();
-                new HiloCliente(cliente).start();
-            }
-
-        } catch (IOException e) {
-            System.out.println("Error servidor: " + e.getMessage());
+        if (!ConexionInternet.hayInternet()) {
+            System.out.println("Error: no hay conexión a Internet");
+            System.exit(0);
         }
+        else {
+        
+            int puerto = 5000;
+
+            try (ServerSocket server = new ServerSocket(puerto)) {
+                System.out.println("Servidor iniciado en puerto " + puerto);
+
+                while (true) {
+                    Socket cliente = server.accept();
+                    new HiloCliente(cliente).start();
+                }
+
+            } catch (IOException e) {
+                System.out.println("Error servidor: " + e.getMessage());
+            }
+        }
+        
+        
     }
 }
 
