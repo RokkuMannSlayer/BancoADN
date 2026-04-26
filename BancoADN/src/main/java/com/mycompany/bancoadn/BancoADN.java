@@ -4,6 +4,52 @@ import java.sql.*;
 
 public class BancoADN {
 
+    // 🔹 REGISTRAR CLIENTE
+    public String registrarCliente(String nombre, String email, String password, String dni) {
+        try {
+            Connection con = ConexionBD.conectar();
+
+            CallableStatement cs = con.prepareCall("{CALL RegistrarCliente(?, ?, ?, ?)}");
+            cs.setString(1, nombre);
+            cs.setString(2, email);
+            cs.setString(3, password);
+            cs.setString(4, dni);
+
+            ResultSet rs = cs.executeQuery();
+
+            if (rs.next()) {
+                return rs.getString("mensaje");
+            }
+
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
+        }
+        return "Error";
+    }
+
+    // 🔹 EDITAR PERFIL GENÉTICO
+    public String editarPerfilGenetico(int idPerfil, String descripcion, String estado, int idAdmin) {
+        try {
+            Connection con = ConexionBD.conectar();
+
+            CallableStatement cs = con.prepareCall("{CALL EditarPerfilGenetico(?, ?, ?, ?)}");
+            cs.setInt(1, idPerfil);
+            cs.setString(2, descripcion);
+            cs.setString(3, estado);
+            cs.setInt(4, idAdmin);
+
+            ResultSet rs = cs.executeQuery();
+
+            if (rs.next()) {
+                return rs.getString("mensaje");
+            }
+
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
+        }
+        return "Error";
+    }
+
     // 🔹 REGISTRAR PERFIL (CLIENTE)
     public String registrarPerfil(int idCliente, String descripcion) {
         try {

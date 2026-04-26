@@ -69,7 +69,25 @@ class HiloCliente extends Thread {
 
                 salida.println(resultado);
             }
-
+            
+            else if (comando.startsWith("REGISTRO")) {
+                
+                String[] datos = comando.split(",");
+                
+                String nombre = datos[1];
+                String dni = datos[2];
+                String email = datos[3];
+                String pass = datos[4];
+                
+                String resultado = banco.registrarCliente(nombre, email, pass, dni);
+                
+                if (resultado.contains("correctamente")) {
+                    salida.println("OK");
+                } else {
+                    salida.println(resultado);
+                }
+                
+            }
             // 🔥 REGISTRAR
             else if (comando.startsWith("REGISTRAR")) {
                 String[] datos = comando.split(",");
@@ -83,6 +101,18 @@ class HiloCliente extends Thread {
             else if (comando.startsWith("CONSULTAR")) {
                 int id = Integer.parseInt(comando.split(",")[1]);
                 salida.println(banco.consultarPerfilCliente(id));
+            }
+            
+            else if (comando.startsWith("EDITAR")){
+                String[] datos = comando.split(",");
+
+                int idPerfil = Integer.parseInt(datos[1]);
+                String desc = datos[2];
+                String estado = datos[3];
+
+                String resultado = banco.editarPerfilGenetico(idPerfil, desc, estado, 1);
+
+                salida.println(resultado);
             }
 
         } catch (Exception e) {

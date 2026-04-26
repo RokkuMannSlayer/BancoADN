@@ -17,15 +17,22 @@ public class LoginRemoto {
 
             if (rs.next()) {
                 String tipo = rs.getString("tipo");
-                int id = rs.getInt("id");
 
-                return "OK," + tipo + "," + id;
+                // 🔥 VALIDACIÓN CLAVE
+                if (tipo.equals("CLIENTE") || tipo.equals("ADMIN")) {
+
+                    int id = rs.getInt("id");
+                    return "OK," + tipo + "," + id;
+
+                } else {
+                    return "ERROR,Credenciales incorrectas";
+                }
             }
 
         } catch (Exception e) {
             return "ERROR," + e.getMessage();
         }
 
-        return "ERROR,Credenciales";
+        return "ERROR,Credenciales incorrectas";
     }
 }

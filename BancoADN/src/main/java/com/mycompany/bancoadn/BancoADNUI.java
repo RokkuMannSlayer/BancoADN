@@ -33,40 +33,81 @@ public class BancoADNUI extends JFrame {
 
         if (rol.equals("CLIENTE")) {
 
-            JTextField txtDescripcion = new JTextField(20);
+            JTextField txtDescripcion = new JTextField(15);
+            JTextField txtIdPerfil = new JTextField(5);
 
             JButton btnRegistrar = boton("Registrar Perfil");
             JButton btnConsultar = boton("Consultar Mi Perfil");
+            JButton btnEditar = boton("Editar Perfil");
 
+            panelBotones.add(new JLabel("ID Perfil:"));
+            panelBotones.add(txtIdPerfil);
+            panelBotones.add(new JLabel("Descripción:"));
             panelBotones.add(txtDescripcion);
 
+            // 🔹 REGISTRAR PERFIL
             btnRegistrar.addActionListener(e -> {
 
-            if (!ConexionInternet.hayInternet()) {
-                JOptionPane.showMessageDialog(null, "Sin conexión a Internet");
-                return;
-            }
+                if (!ConexionInternet.hayInternet()) {
+                    JOptionPane.showMessageDialog(null, "Sin conexión a Internet");
+                    return;
+                }
 
-            String res = ClienteSocket.enviar(
-                "REGISTRAR," + idUsuario
+                String desc = txtDescripcion.getText();
+
+                String res = ClienteSocket.enviar(
+                        "REGISTRAR," + idUsuario + "," + desc
                 );
 
-                areaSalida.setText(banco.registrarPerfil(idUsuario, txtDescripcion.getText()));
+                areaSalida.setText(banco.registrarPerfil(idUsuario, desc));
             });
 
+            // 🔹 CONSULTAR PERFIL
             btnConsultar.addActionListener(e -> {
+
+                if (!ConexionInternet.hayInternet()) {
+                    JOptionPane.showMessageDialog(null, "Sin conexión a Internet");
+                    return;
+                }
+
                 String res = ClienteSocket.enviar(
-                    "CONSULTAR,"
+                        "CONSULTAR," + idUsuario
                 );
+
                 areaSalida.setText(banco.consultarPerfilCliente(idUsuario));
             });
-            
+
+            // 🔹 EDITAR PERFIL GENÉTICO
+            btnEditar.addActionListener(e -> {
+
+                if (!ConexionInternet.hayInternet()) {
+                    JOptionPane.showMessageDialog(null, "Sin conexión a Internet");
+                    return;
+                }
+
+                String idPerfilTxt = txtIdPerfil.getText();
+                String desc = txtDescripcion.getText();
+
+                if (idPerfilTxt.isEmpty() || desc.isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "Complete todos los campos");
+                    return;
+                }
+
+                int idPerfil = Integer.parseInt(idPerfilTxt);
+
+                String res = ClienteSocket.enviar(
+                        "EDITAR," + idPerfil + "," + desc + ",activo"
+                );
+
+                areaSalida.setText(res);
+            });
+
             add(lblTitulo, BorderLayout.NORTH);
 
             panelBotones.add(btnRegistrar);
             panelBotones.add(btnConsultar);
-
-        } else {
+            panelBotones.add(btnEditar);
+        } else if(rol.equals("ADMIN")) {
 
             JButton btnListar = boton("Listar Perfiles");
             JButton btnConsultar = boton("Consultar Perfiles");
@@ -118,7 +159,7 @@ public class BancoADNUI extends JFrame {
         areaSalida.setPreferredSize(new Dimension(115, 115));
 
         add(new JScrollPane(areaSalida), BorderLayout.SOUTH);
-    }
+    } 
 
     // =========================
     // TABLA SIMPLE (SIN ACCIONES)

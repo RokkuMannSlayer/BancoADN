@@ -110,7 +110,7 @@ public class Sign {
 
             JPanel form = new JPanel(new GridLayout(2, 2, 10, 10));
 
-            form.add(new JLabel("Usuario:"));
+            form.add(new JLabel("Mail:"));
             txtUsuario = new JTextField();
             form.add(txtUsuario);
 
@@ -155,36 +155,66 @@ public class Sign {
             add(panel);
         }
 
-        // 🔐 LOGIN USANDO STORED PROCEDURE
         private void autenticarLogin() {
 
+            // 🔌 Verificar internet
             if (!ConexionInternet.hayInternet()) {
                 JOptionPane.showMessageDialog(this, "Sin conexión a Internet");
                 return;
             }
 
-            String usuario = txtUsuario.getText();
-            String password = new String(txtPassword.getPassword());
+            String usuario = txtUsuario.getText().trim();
+            String password = new String(txtPassword.getPassword()).trim();
 
+            // ⚠️ Validación básica
             if (usuario.isEmpty() || password.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Complete todos los campos");
                 return;
             }
 
+            // 📡 Enviar al servidor
             String respuesta = ClienteSocket.enviar("LOGIN," + usuario + "," + password);
 
-            if (respuesta.startsWith("OK")) {
-
-                String[] datos = respuesta.split(",");
-                String tipo = datos[1];
-                int id = Integer.parseInt(datos[2]);
-
-                new BancoADNUI(tipo, id).setVisible(true);
-                dispose();
-
-            } else {
-                JOptionPane.showMessageDialog(this, "Error: " + respuesta);
+            // ⚠️ Validar respuesta nula o vacía
+            if (respuesta == null || respuesta.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Error de comunicación con el servidor");
+                return;
             }
+
+            // ❌ Si no empieza con OK → error directo
+            if (!respuesta.startsWith("OK")) {
+                JOptionPane.showMessageDialog(this, "Credenciales incorrectas");
+                return;
+            }
+
+            // 🔍 Procesar respuesta
+            String[] datos = respuesta.split(",");
+
+            // ⚠️ Validar estructura
+            if (datos.length < 3) {
+                JOptionPane.showMessageDialog(this, "Respuesta inválida del servidor");
+                return;
+            }
+
+            String tipo = datos[1];
+
+            // 🔒 VALIDACIÓN CLAVE (evita bug de admin)
+            if (!tipo.equals("CLIENTE") && !tipo.equals("ADMIN")) {
+                JOptionPane.showMessageDialog(this, "Tipo de usuario inválido");
+                return;
+            }
+
+            int id;
+            try {
+                id = Integer.parseInt(datos[2]);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "ID inválido recibido");
+                return;
+            }
+
+            // 🚀 Abrir interfaz
+            new BancoADNUI(tipo, id).setVisible(true);
+            dispose();
         }
     }
 
@@ -274,10 +304,42 @@ public class Sign {
         
         //Modificar este void para Stored Procedure
         private void registrarUsuario() {
-            
-            
-            new signMenu().setVisible(true);
-            dispose();
-        }
+
+            // 🔌 Verificar internet
+            if (!ConexionInternet.hayInternet()) {
+                JOptionPane.showMessageDialog(this, "Sin conexión a Internet");
+                return;
+            }
+
+            // 📥 Obtener datos
+            String nombre = txtNombre.getText();
+            String dni = txtDni.getText();
+            String email = txtMail.getText();
+            String password = new String(txtPass.getPassword());
+
+            // ⚠️ Validaciones básicas
+            if (nombre.isEmpty() || dni.isEmpty() || email.isEmpty() || password.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Complete todos los campos");
+                return;
+            }
+
+            // 📡 Enviar al servidor (MISMO ESTILO QUE LOGIN)
+            String respuesta = ClienteSocket.enviar(
+                "REGISTRO," + nombre + "," + dni + "," + email + "," + password
+            );
+
+            // 📊 Procesar respuesta
+            if (respuesta.startsWith("OK")) {
+
+                JOptionPane.showMessageDialog(this, "Usuario registrado correctamente");
+
+                // Volver al menú
+                new signMenu().setVisible(true);
+                dispose();
+
+            } else {
+                JOptionPane.showMessageDialog(this, "Error: " + respuesta);
+            }
+}
     }
 }
