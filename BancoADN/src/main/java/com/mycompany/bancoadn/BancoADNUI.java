@@ -2,13 +2,10 @@ package com.mycompany.bancoadn;
 
 import javax.swing.*;
 import java.awt.*;
-import java.sql.ResultSet;
 
 public class BancoADNUI extends JFrame {
 
-    private BancoADN banco = new BancoADN();
     private JTextArea areaSalida;
-
     private String rol;
     private int idUsuario;
 
@@ -22,7 +19,7 @@ public class BancoADNUI extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
-        
+
         JLabel lblTitulo = new JLabel("", SwingConstants.CENTER);
         lblTitulo.setIcon(new ImageIcon("dna_146c.gif"));
 
@@ -31,6 +28,7 @@ public class BancoADNUI extends JFrame {
         JPanel panelBotones = new JPanel();
         panelBotones.setBackground(Color.BLACK);
 
+        // ================= CLIENTE =================
         if (rol.equals("CLIENTE")) {
 
             JTextField txtDescripcion = new JTextField(15);
@@ -45,102 +43,64 @@ public class BancoADNUI extends JFrame {
             panelBotones.add(new JLabel("Descripción:"));
             panelBotones.add(txtDescripcion);
 
-            // 🔹 REGISTRAR PERFIL
+            // 🔹 REGISTRAR
             btnRegistrar.addActionListener(e -> {
-
-                if (!ConexionInternet.hayInternet()) {
-                    JOptionPane.showMessageDialog(null, "Sin conexión a Internet");
-                    return;
-                }
-
-                String desc = txtDescripcion.getText();
-
                 String res = ClienteSocket.enviar(
-                        "REGISTRAR," + idUsuario + "," + desc
+                        "REGISTRAR," + idUsuario + "," + txtDescripcion.getText()
                 );
-
-                areaSalida.setText(banco.registrarPerfil(idUsuario, desc));
+                mostrar(res);
             });
 
-            // 🔹 CONSULTAR PERFIL
+            // 🔹 CONSULTAR
             btnConsultar.addActionListener(e -> {
-
-                if (!ConexionInternet.hayInternet()) {
-                    JOptionPane.showMessageDialog(null, "Sin conexión a Internet");
-                    return;
-                }
-
                 String res = ClienteSocket.enviar(
                         "CONSULTAR," + idUsuario
                 );
-
-                areaSalida.setText(banco.consultarPerfilCliente(idUsuario));
+                mostrar(res);
             });
 
-            // 🔹 EDITAR PERFIL GENÉTICO
+            // 🔹 EDITAR
             btnEditar.addActionListener(e -> {
-
-                if (!ConexionInternet.hayInternet()) {
-                    JOptionPane.showMessageDialog(null, "Sin conexión a Internet");
-                    return;
-                }
 
                 String idPerfilTxt = txtIdPerfil.getText();
                 String desc = txtDescripcion.getText();
 
                 if (idPerfilTxt.isEmpty() || desc.isEmpty()) {
-                    JOptionPane.showMessageDialog(null, "Complete todos los campos");
+                    JOptionPane.showMessageDialog(this, "Complete todos los campos");
                     return;
                 }
 
-                int idPerfil = Integer.parseInt(idPerfilTxt);
-
                 String res = ClienteSocket.enviar(
-                        "EDITAR," + idPerfil + "," + desc + ",activo"
+                        "EDITAR," + idPerfilTxt + "," + desc + ",activo"
                 );
 
-                areaSalida.setText(res);
+                mostrar(res);
             });
-
-            add(lblTitulo, BorderLayout.NORTH);
 
             panelBotones.add(btnRegistrar);
             panelBotones.add(btnConsultar);
             panelBotones.add(btnEditar);
-        } else if(rol.equals("ADMIN")) {
+        }
+
+        // ================= ADMIN =================
+        else if (rol.equals("ADMIN")) {
 
             JButton btnListar = boton("Listar Perfiles");
             JButton btnConsultar = boton("Consultar Perfiles");
-            JButton btnEliminar = boton("Eliminar Perfiles");
+            JButton btnEliminar = boton("Eliminar Perfil");
 
-            // 🔹 LISTAR (solo tabla)
             btnListar.addActionListener(e -> {
-                
-                if (!ConexionInternet.hayInternet()) {
-                    JOptionPane.showMessageDialog(null, "Sin conexión a Internet");
-                    return;
-                } else {
-                    abrirTablaSimple(banco.listarPerfiles(), "Lista de Perfiles");
-                }      
+                mostrar(ClienteSocket.enviar("LISTAR"));
             });
 
-            // 🔹 CONSULTAR (tabla completa)
             btnConsultar.addActionListener(e -> {
-                if (!ConexionInternet.hayInternet()) {
-                    JOptionPane.showMessageDialog(null, "Sin conexión a Internet");
-                    return;
-                } else {
-                    abrirTablaSimple(banco.consultarTodosPerfiles(), "Consulta de Perfiles");
-                }
+                mostrar(ClienteSocket.enviar("LISTAR"));
             });
 
-            // 🔴 ELIMINAR (ventana separada)
             btnEliminar.addActionListener(e -> {
-                if (!ConexionInternet.hayInternet()) {
-                    JOptionPane.showMessageDialog(null, "Sin conexión a Internet");
-                    return;
-                } else {
-                    abrirVentanaEliminar();
+                String id = JOptionPane.showInputDialog(this, "ID del perfil:");
+                if (id != null && !id.isEmpty()) {
+                    mostrar(ClienteSocket.enviar("ELIMINAR," + id));
                 }
             });
 
@@ -148,128 +108,33 @@ public class BancoADNUI extends JFrame {
             panelBotones.add(btnConsultar);
             panelBotones.add(btnEliminar);
         }
-        
-        add(lblTitulo, BorderLayout.NORTH);
 
-        add(panelBotones, BorderLayout.CENTER);
-
+        // 🔥 ÁREA DE SALIDA
         areaSalida = new JTextArea();
+        areaSalida.setEditable(false);
+        areaSalida.setPreferredSize(new Dimension(115, 115));
         areaSalida.setBackground(Color.BLACK);
         areaSalida.setForeground(Color.WHITE);
-        areaSalida.setPreferredSize(new Dimension(115, 115));
 
+        add(lblTitulo, BorderLayout.NORTH);
+        add(panelBotones, BorderLayout.CENTER);
         add(new JScrollPane(areaSalida), BorderLayout.SOUTH);
-    } 
+    }
 
     // =========================
-    // TABLA SIMPLE (SIN ACCIONES)
+    // MOSTRAR RESPUESTA
     // =========================
-    private void abrirTablaSimple(ResultSet rs, String titulo) {
-
-        try {
-            String[] columnas = {"ID", "Cliente", "DNI", "Descripción", "Estado", "Admin"};
-
-            javax.swing.table.DefaultTableModel modelo =
-                    new javax.swing.table.DefaultTableModel(columnas, 0);
-
-            while (rs.next()) {
-                Object[] fila = {
-                        rs.getInt("IDperfil"),
-                        rs.getString("Nombre_cliente"),
-                        rs.getString("DNI_cliente"),
-                        rs.getString("Descripcion"),
-                        rs.getString("Estado"),
-                        rs.getString("Nombre_admin")
-                };
-                modelo.addRow(fila);
-            }
-
-            JTable tabla = new JTable(modelo);
-            tabla.setBackground(Color.BLACK);
-            tabla.setForeground(Color.WHITE);
-
-            JScrollPane scroll = new JScrollPane(tabla);
-
-            JFrame ventana = new JFrame(titulo);
-            ventana.setSize(700, 400);
-            ventana.add(scroll);
-            ventana.setLocationRelativeTo(null);
-            ventana.setVisible(true);
-
-        } catch (Exception e) {
-            areaSalida.setText("Error al mostrar datos: " + e.getMessage());
+    private void mostrar(String res) {
+        if (res == null || res.startsWith("ERROR")) {
+            JOptionPane.showMessageDialog(this, res);
+        } else {
+            areaSalida.setText(res);
         }
     }
 
     // =========================
-    // VENTANA ELIMINAR
+    // BOTONES ESTILO
     // =========================
-    private void abrirVentanaEliminar() {
-
-        try {
-            ResultSet rs = banco.listarPerfiles();
-
-            String[] columnas = {"ID", "Cliente", "DNI", "Descripción", "Estado", "Admin"};
-
-            javax.swing.table.DefaultTableModel modelo =
-                    new javax.swing.table.DefaultTableModel(columnas, 0);
-
-            while (rs.next()) {
-                Object[] fila = {
-                        rs.getInt("IDperfil"),
-                        rs.getString("Nombre_cliente"),
-                        rs.getString("DNI_cliente"),
-                        rs.getString("Descripcion"),
-                        rs.getString("Estado"),
-                        rs.getString("Nombre_admin")
-                };
-                modelo.addRow(fila);
-            }
-
-            JTable tabla = new JTable(modelo);
-            tabla.setBackground(Color.BLACK);
-            tabla.setForeground(Color.WHITE);
-
-            JScrollPane scroll = new JScrollPane(tabla);
-
-            JButton btnEliminar = new JButton("Eliminar Seleccionado");
-            btnEliminar.setBackground(Color.RED);
-            btnEliminar.setForeground(Color.WHITE);
-
-            btnEliminar.addActionListener(e -> {
-
-                int fila = tabla.getSelectedRow();
-
-                if (fila == -1) {
-                    JOptionPane.showMessageDialog(null, "Seleccione un perfil");
-                    return;
-                }
-
-                int idPerfil = (int) tabla.getValueAt(fila, 0);
-
-                String res = banco.eliminarPerfil(idPerfil);
-
-                JOptionPane.showMessageDialog(null, res);
-
-                // eliminar de la tabla visual
-                ((javax.swing.table.DefaultTableModel) tabla.getModel()).removeRow(fila);
-            });
-
-            JFrame ventana = new JFrame("Eliminar Perfiles");
-            ventana.setSize(800, 400);
-            ventana.setLayout(new BorderLayout());
-
-            ventana.add(scroll, BorderLayout.CENTER);
-            ventana.add(btnEliminar, BorderLayout.SOUTH);
-
-            ventana.setLocationRelativeTo(null);
-            ventana.setVisible(true);
-
-        } catch (Exception e) {
-            areaSalida.setText("Error al abrir eliminación: " + e.getMessage());
-        }
-    }
-
     private JButton boton(String txt) {
         JButton b = new JButton(txt);
         b.setBackground(Color.BLUE);

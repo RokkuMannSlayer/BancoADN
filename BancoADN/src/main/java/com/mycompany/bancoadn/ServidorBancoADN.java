@@ -2,37 +2,31 @@ package com.mycompany.bancoadn;
 
 import java.io.*;
 import java.net.*;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.ResultSet;
 import java.util.Set;
 import java.util.HashSet;
 
 public class ServidorBancoADN {
-    
+
     public static Set<String> clientesConectados = new HashSet<>();
 
     public static void main(String[] args) {
-        
-        if (!ConexionInternet.hayInternet()) {
-            System.out.println("Error: no hay conexión a Internet");
-            System.exit(0);
-        }
-        else {
-        
-            int puerto = 5000;
 
-            try (ServerSocket server = new ServerSocket(puerto)) {
-                System.out.println("Servidor iniciado en puerto " + puerto);
+        int puerto = 5000;
 
-                while (true) {
-                    Socket cliente = server.accept();
-                    new HiloCliente(cliente).start();
-                }
+        try (ServerSocket server = new ServerSocket(puerto)) {
+            System.out.println("Servidor iniciado en puerto " + puerto);
 
-            } catch (IOException e) {
-                System.out.println("Error servidor: " + e.getMessage());
+            while (true) {
+                Socket cliente = server.accept();
+                new HiloCliente(cliente).start();
             }
+
+        } catch (IOException e) {
+            System.out.println("Error servidor: " + e.getMessage());
         }
-        
-        
     }
 }
 
@@ -53,82 +47,119 @@ class HiloCliente extends Thread {
             PrintWriter salida = new PrintWriter(socket.getOutputStream(), true)
         ) {
 
-            String comando = entrada.readLine();
+            String comando;
 
-            // 🔥 LOGIN
-            if (comando.startsWith("LOGIN")) {
-                String[] datos = comando.split(",");
-                usuario = datos[1];
+            // 🔥 LOOP → permite múltiples comandos por conexión
+            while ((comando = entrada.readLine()) != null) {
 
-                // AGREGAR USUARIO
-                ServidorBancoADN.clientesConectados.add(usuario);
-                mostrarClientes();
-
-                String pass = datos[2];
-                String resultado = LoginRemoto.login(usuario, pass);
-
-                salida.println(resultado);
-            }
-            
-            else if (comando.startsWith("REGISTRO")) {
-                
-                String[] datos = comando.split(",");
-                
-                String nombre = datos[1];
-                String dni = datos[2];
-                String email = datos[3];
-                String pass = datos[4];
-                
-                String resultado = banco.registrarCliente(nombre, email, pass, dni);
-                
-                if (resultado.contains("correctamente")) {
-                    salida.println("OK");
-                } else {
-                    salida.println(resultado);
-                }
-                
-            }
-            // 🔥 REGISTRAR
-            else if (comando.startsWith("REGISTRAR")) {
-                String[] datos = comando.split(",");
-                int id = Integer.parseInt(datos[1]);
-                String desc = datos[2];
-
-                salida.println(banco.registrarPerfil(id, desc));
-            }
-
-            // 🔥 CONSULTAR
-            else if (comando.startsWith("CONSULTAR")) {
-                int id = Integer.parseInt(comando.split(",")[1]);
-                salida.println(banco.consultarPerfilCliente(id));
-            }
-            
-            else if (comando.startsWith("EDITAR")){
-                String[] datos = comando.split(",");
-
-                int idPerfil = Integer.parseInt(datos[1]);
-                String desc = datos[2];
-                String estado = datos[3];
-
-                String resultado = banco.editarPerfilGenetico(idPerfil, desc, estado, 1);
-
-                salida.println(resultado);
+                String respuesta = procesar(comando);
+                salida.println(respuesta);
             }
 
         } catch (Exception e) {
             System.out.println("Error cliente: " + e.getMessage());
         } finally {
-            // 🔴 CUANDO SE DESCONECTA
             ServidorBancoADN.clientesConectados.remove(usuario);
             mostrarClientes();
 
-            try {
-                socket.close();
-            } catch (Exception e) {}
+            try { socket.close(); } catch (Exception e) {}
         }
     }
 
-    // 🔥 MOSTRAR CLIENTES EN CONSOLA
+    // =========================
+    // PROCESAR COMANDOS
+    // =========================
+    private String procesar(String comando) {
+
+        try {
+
+            String[] datos = comando.split(",");
+
+            switch (datos[0]) {
+
+                case "LOGIN":
+                    usuario = datos[1];
+                    String pass = datos[2];
+
+                    ServidorBancoADN.clientesConectados.add(usuario);
+                    mostrarClientes();
+
+                    return LoginRemoto.login(usuario, pass);
+
+                case "REGISTRO":
+                    return banco.registrarCliente(
+                            datos[1], // nombre
+                            datos[3], // email
+                            datos[4], // pass
+                            datos[2]  // dni
+                    );
+
+                case "REGISTRAR":
+                    return banco.registrarPerfil(
+                            Integer.parseInt(datos[1]),
+                            datos[2]
+                    );
+
+                case "CONSULTAR":
+                    return banco.consultarPerfilCliente(
+                            Integer.parseInt(datos[1])
+                    );
+
+                case "EDITAR":
+                    return banco.editarPerfilGenetico(
+                            Integer.parseInt(datos[1]),
+                            datos[2],
+                            datos[3],
+                            1
+                    );
+
+                case "LISTAR":
+                    return listarPerfilesTexto();
+
+                case "ELIMINAR":
+                    return banco.eliminarPerfil(
+                            Integer.parseInt(datos[1])
+                    );
+
+                default:
+                    return "ERROR,Comando desconocido";
+            }
+
+        } catch (Exception e) {
+            return "ERROR," + e.getMessage();
+        }
+    }
+
+    // =========================
+    // LISTAR EN TEXTO (simple)
+    // =========================
+    private String listarPerfilesTexto() {
+
+    StringBuilder sb = new StringBuilder();
+
+    try (Connection con = ConexionBD.conectar();
+         CallableStatement cs = con.prepareCall("{CALL ListarPerfiles()}");
+         ResultSet rs = cs.executeQuery()) {
+
+        while (rs.next()) {
+            sb.append("ID: ").append(rs.getInt("IDperfil"))
+              .append(" | Cliente: ").append(rs.getString("Nombre_cliente"))
+              .append(" | DNI: ").append(rs.getString("DNI_cliente"))
+              .append(" | Estado: ").append(rs.getString("Estado"))
+              .append("\n");
+        }
+
+        if (sb.length() == 0) {
+            return "Sin datos";
+        }
+
+        return sb.toString();
+
+    } catch (Exception e) {
+        return "ERROR," + e.getMessage();
+    }
+}
+
     private void mostrarClientes() {
         System.out.println("Usuarios conectados: " + ServidorBancoADN.clientesConectados);
     }

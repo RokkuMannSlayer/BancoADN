@@ -9,13 +9,17 @@ public class ClienteSocket {
     private static final int PUERTO = 5000;
 
     public static String enviar(String mensaje) {
+
         try (
             Socket socket = new Socket(HOST, PUERTO);
             PrintWriter salida = new PrintWriter(socket.getOutputStream(), true);
-            BufferedReader entrada = new BufferedReader(new InputStreamReader(socket.getInputStream()))
+            BufferedReader entrada = new BufferedReader(
+                    new InputStreamReader(socket.getInputStream())
+            )
         ) {
 
             salida.println(mensaje);
+            
             return entrada.readLine();
 
         } catch (Exception e) {

@@ -6,31 +6,39 @@ public class LoginRemoto {
 
     public static String login(String usuario, String password) {
 
-        try {
-            Connection con = ConexionBD.conectar();
+        // 🔹 Validación básica
+        if (usuario == null || password == null ||
+            usuario.trim().isEmpty() || password.trim().isEmpty()) {
+            return "ERROR,Complete usuario y contraseña";
+        }
 
-            CallableStatement cs = con.prepareCall("{CALL LoginUsuario(?, ?)}");
+        String sql = "{CALL LoginUsuario(?, ?)}";
+
+        try (Connection con = ConexionBD.conectar();
+             CallableStatement cs = con.prepareCall(sql)) {
+
             cs.setString(1, usuario);
             cs.setString(2, password);
 
-            ResultSet rs = cs.executeQuery();
+            try (ResultSet rs = cs.executeQuery()) {
 
-            if (rs.next()) {
-                String tipo = rs.getString("tipo");
+                if (rs.next()) {
 
-                // 🔥 VALIDACIÓN CLAVE
-                if (tipo.equals("CLIENTE") || tipo.equals("ADMIN")) {
+                    String tipo = rs.getString("tipo");
 
-                    int id = rs.getInt("id");
-                    return "OK," + tipo + "," + id;
+                    if ("CLIENTE".equals(tipo) || "ADMIN".equals(tipo)) {
 
-                } else {
-                    return "ERROR,Credenciales incorrectas";
+                        int id = rs.getInt("id");
+                        return "OK," + tipo + "," + id;
+
+                    } else {
+                        return "ERROR,Credenciales incorrectas";
+                    }
                 }
             }
 
-        } catch (Exception e) {
-            return "ERROR," + e.getMessage();
+        } catch (SQLException e) {
+            return "ERROR,SQL: " + e.getMessage();
         }
 
         return "ERROR,Credenciales incorrectas";
