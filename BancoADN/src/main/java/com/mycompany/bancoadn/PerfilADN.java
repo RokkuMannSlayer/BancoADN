@@ -1,7 +1,7 @@
 package com.mycompany.bancoadn;
 
 public class PerfilADN {
-    private String id;
+    private int id;
     private String nombre;
     private String descripcion;
     private boolean activo;
