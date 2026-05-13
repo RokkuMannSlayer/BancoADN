@@ -1,7 +1,7 @@
-package com.mycompany.bancoadn;
+package com.mycompany.bancoadn.red;
 
 import java.io.*;
-import java.net.*;
+import java.net.Socket;
 
 public class ClienteSocket {
 
@@ -12,17 +12,26 @@ public class ClienteSocket {
 
         try (
             Socket socket = new Socket(HOST, PUERTO);
-            PrintWriter salida = new PrintWriter(socket.getOutputStream(), true);
+
+            PrintWriter salida = new PrintWriter(
+                    socket.getOutputStream(),
+                    true
+            );
+
             BufferedReader entrada = new BufferedReader(
-                    new InputStreamReader(socket.getInputStream())
-            )
+                    new InputStreamReader(
+                            socket.getInputStream()
+                    )
+            );
+
         ) {
 
             salida.println(mensaje);
-            
+
             return entrada.readLine();
 
         } catch (Exception e) {
+
             return "ERROR," + e.getMessage();
         }
     }
