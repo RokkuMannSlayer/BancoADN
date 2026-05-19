@@ -1,103 +1,43 @@
 package com.mycompany.bancoadn.red;
 
-import com.mycompany.bancoadn.servicios.BancoADN;
-
 import javax.swing.*;
 import java.awt.*;
-import java.io.*;
-import java.net.*;
-import java.util.HashSet;
-import java.util.Set;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class ServidorBancoADN extends JFrame {
+public class ServidorBancoADN {
 
     // =========================
     // USUARIOS CONECTADOS
     // =========================
-    public static Set<String> usuariosConectados = new HashSet<>();
+    public static ConcurrentHashMap<String, Boolean>
+            usuariosConectados = new ConcurrentHashMap<>();
 
     // =========================
-    // COMPONENTES UI
+    // UI
     // =========================
     private static JTextArea areaUsuarios;
-
-    // =========================
-    // CONSTRUCTOR UI
-    // =========================
-    public ServidorBancoADN() {
-
-        setTitle("Servidor Banco ADN");
-        setSize(500, 400);
-        setLocationRelativeTo(null);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setLayout(new BorderLayout());
-
-        JLabel titulo = new JLabel(
-                "Usuarios conectados",
-                SwingConstants.CENTER
-        );
-
-        titulo.setFont(
-                new Font("Segoe UI", Font.BOLD, 20)
-        );
-
-        areaUsuarios = new JTextArea();
-        areaUsuarios.setEditable(false);
-
-        JScrollPane scroll = new JScrollPane(areaUsuarios);
-
-        add(titulo, BorderLayout.NORTH);
-        add(scroll, BorderLayout.CENTER);
-    }
-
-    // =========================
-    // ACTUALIZAR UI
-    // =========================
-    public static synchronized void actualizarUsuarios() {
-
-        SwingUtilities.invokeLater(() -> {
-
-            if (areaUsuarios == null) {
-                return;
-            }
-
-            StringBuilder sb = new StringBuilder();
-
-            synchronized (usuariosConectados) {
-
-                for (String u : usuariosConectados) {
-
-                    sb.append("• ").append(u).append("\n");
-                }
-            }
-
-            if (sb.length() == 0) {
-                sb.append("No hay usuarios conectados");
-            }
-
-            areaUsuarios.setText(sb.toString());
-        });
-    }
 
     // =========================
     // MAIN
     // =========================
     public static void main(String[] args) {
 
-        // UI DEL SERVIDOR
-        SwingUtilities.invokeLater(() -> {
-            new ServidorBancoADN().setVisible(true);
-        });
+        crearVentana();
 
         int puerto = 5000;
 
-        try (ServerSocket server = new ServerSocket(puerto)) {
+        try (ServerSocket servidor = new ServerSocket(puerto)) {
 
-            System.out.println("Servidor iniciado en puerto " + puerto);
+            System.out.println("Servidor iniciado en puerto "+ puerto);
 
             while (true) {
 
-                Socket cliente = server.accept();
+                Socket cliente = servidor.accept();
+
+                System.out.println("Nuevo cliente conectado");
 
                 new HiloCliente(cliente).start();
             }
@@ -109,142 +49,55 @@ public class ServidorBancoADN extends JFrame {
     }
 
     // =========================
-    // HILO CLIENTE
+    // VENTANA
     // =========================
-    static class HiloCliente extends Thread {
+    private static void crearVentana() {
 
-        private Socket socket;
+        JFrame frame = new JFrame("Usuarios Conectados");
 
-        private BancoADN banco = new BancoADN();
+        frame.setSize(400, 500);
 
-        private String usuario = "Desconocido";
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        public HiloCliente(Socket socket) {
+        frame.setLocationRelativeTo(null);
 
-            this.socket = socket;
-        }
+        areaUsuarios = new JTextArea();
 
-        @Override
-        public void run() {
+        areaUsuarios.setEditable(false);
 
-            try (
+        areaUsuarios.setFont(new Font("Monospaced", Font.PLAIN, 14));
 
-                BufferedReader entrada = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        JScrollPane scroll = new JScrollPane(areaUsuarios);
 
-                PrintWriter salida = new PrintWriter(socket.getOutputStream(), true)
+        frame.add(scroll);
 
-            ) {
+        frame.setVisible(true);
+    }
 
-                String comando;
+    // =========================
+    // ACTUALIZAR USUARIOS
+    // =========================
+    public static synchronized void actualizarUsuarios() {
 
-                while ((comando = entrada.readLine()) != null) {
+        SwingUtilities.invokeLater(() -> {
 
-                    String respuesta = procesar(comando);
+            StringBuilder sb =  new StringBuilder();
 
-                    salida.println(respuesta);
-                }
+            sb.append("USUARIOS CONECTADOS\n\n");
 
-            } catch (Exception e) {
+            if (usuariosConectados.isEmpty()) {
 
-                System.out.println("Error cliente: " + e.getMessage());
+                sb.append("Sin usuarios conectados");
 
-            } finally {
+            } else {
 
-                usuariosConectados.remove(usuario);
+                for (String usuario : usuariosConectados.keySet()) {
 
-                actualizarUsuarios();
-
-                try {
-                    socket.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
+                    sb.append("• ").append(usuario).append("\n");
                 }
             }
-        }
 
-        // =========================
-        // PROCESAR
-        // =========================
-        private String procesar(String comando) {
-
-            try {
-
-                String[] datos = comando.split(",");
-
-                switch (datos[0]) {
-
-                    // ================= LOGIN
-                    case "LOGIN":
-
-                        usuario = datos[1];
-
-                        String respuestaLogin = banco.login(datos[1], datos[2]);
-
-                        if (respuestaLogin.startsWith("OK")) {
-
-                            usuariosConectados.add(usuario);
-
-                            actualizarUsuarios();
-                        }
-
-                        return respuestaLogin;
-
-                    // ================= REGISTRO
-                    case "REGISTRO":
-
-                        return banco.registrarCliente(
-                                datos[1],
-                                datos[3],
-                                datos[4],
-                                datos[2]
-                        );
-
-                    // ================= REGISTRAR PERFIL
-                    case "REGISTRAR":
-
-                        return banco.registrarPerfil(
-                                Integer.parseInt(datos[1]),
-                                datos[2]
-                        );
-
-                    // ================= CONSULTAR
-                    case "CONSULTAR":
-
-                        return banco.consultarPerfilCliente(
-                                Integer.parseInt(datos[1])
-                        );
-
-                    // ================= EDITAR
-                    case "EDITAR":
-
-                        return banco.editarPerfilGenetico(
-                                Integer.parseInt(datos[1]),
-                                datos[2],
-                                datos[3],
-                                1
-                        );
-
-                    // ================= LISTAR
-                    case "LISTAR":
-
-                        return banco.listarPerfilesTexto();
-
-                    // ================= ELIMINAR
-                    case "ELIMINAR":
-
-                        return banco.eliminarPerfil(
-                                Integer.parseInt(datos[1])
-                        );
-
-                    default:
-
-                        return "ERROR,Comando desconocido";
-                }
-
-            } catch (Exception e) {
-
-                return "ERROR," + e.getMessage();
-            }
-        }
+            areaUsuarios.setText(sb.toString());
+        });
     }
 }

@@ -40,10 +40,12 @@ public class HiloCliente extends Thread {
 
                 comando = comando.trim();
 
-                // IGNORAR COMANDOS VACÍOS
+                // IGNORAR VACÍOS
                 if (comando.isEmpty()) {
 
-                    salida.println("ERROR,Comando vacío");
+                    salida.println(
+                            "ERROR,Comando vacío"
+                    );
 
                     continue;
                 }
@@ -60,7 +62,7 @@ public class HiloCliente extends Thread {
         } finally {
 
             // =========================
-            // DESCONECTAR USUARIO
+            // LIBERAR SESIÓN
             // =========================
             synchronized (ServidorBancoADN.usuariosConectados) {
 
@@ -68,7 +70,7 @@ public class HiloCliente extends Thread {
             }
 
             // ACTUALIZAR VENTANA
-            ServidorBancoADN .actualizarUsuarios();
+            ServidorBancoADN.actualizarUsuarios();
 
             try {
 
@@ -79,7 +81,10 @@ public class HiloCliente extends Thread {
 
             } catch (Exception e) {
 
-                System.out.println("Error cerrando socket: " + e.getMessage());
+                System.out.println(
+                        "Error cerrando socket: "
+                                + e.getMessage()
+                );
             }
         }
     }
@@ -93,7 +98,6 @@ public class HiloCliente extends Thread {
 
             String[] datos = comando.split(",");
 
-            // VALIDAR
             if (datos.length == 0) {
 
                 return "ERROR,Comando inválido";
@@ -111,21 +115,36 @@ public class HiloCliente extends Thread {
                         return "ERROR,Faltan datos";
                     }
 
-                    usuario = datos[1];
+                    String email = datos[1].trim().toLowerCase();
 
-                    String respuestaLogin = banco.login(datos[1], datos[2]);
+                    String password = datos[2].trim();
 
-                    // LOGIN EXITOSO
-                    if (respuestaLogin.startsWith("OK")) {
+                    // =========================
+                    // VALIDAR LOGIN
+                    // =========================
+                    String respuestaLogin = banco.login(email, password);
 
-                        synchronized (ServidorBancoADN.usuariosConectados) {
+                    // LOGIN FALLIDO
+                    if (!respuestaLogin.startsWith("OK")) {
 
-                            ServidorBancoADN.usuariosConectados.add(usuario);
-                        }
-
-                        // ACTUALIZAR UI
-                        ServidorBancoADN.actualizarUsuarios();
+                        return respuestaLogin;
                     }
+
+                    // =========================
+                    // SEMÁFORO
+                    // =========================
+                    Boolean anterior = ServidorBancoADN.usuariosConectados.putIfAbsent(email, true);
+                    
+                    if (anterior != null) {
+
+                        return "ERROR,El usuario ya tiene una sesión activa";
+                    }
+
+                    // GUARDAR USUARIO
+                    usuario = email;
+
+                    // ACTUALIZAR VENTANA
+                    ServidorBancoADN.actualizarUsuarios();
 
                     return respuestaLogin;
 
@@ -157,10 +176,7 @@ public class HiloCliente extends Thread {
                         return "ERROR,Faltan datos";
                     }
 
-                    return banco.registrarPerfil(
-
-                            Integer.parseInt(datos[1]), datos[2]
-                    );
+                    return banco.registrarPerfil(Integer.parseInt(datos[1]), datos[2]);
 
                 // =========================
                 // CONSULTAR PERFIL
@@ -174,10 +190,7 @@ public class HiloCliente extends Thread {
 
                     return banco.consultarPerfilCliente(
 
-                            Integer.parseInt(
-                                    datos[1]
-                            )
-                    );
+                            Integer.parseInt(datos[1]));
 
                 // =========================
                 // EDITAR PERFIL
@@ -189,16 +202,7 @@ public class HiloCliente extends Thread {
                         return "ERROR,Faltan datos";
                     }
 
-                    return banco.editarPerfilGenetico(
-
-                            Integer.parseInt(
-                                    datos[1]
-                            ),
-
-                            datos[2],
-                            datos[3],
-                            1
-                    );
+                    return banco.editarPerfilGenetico(Integer.parseInt(datos[1]), datos[2], datos[3], 1);
 
                 // =========================
                 // LISTAR
