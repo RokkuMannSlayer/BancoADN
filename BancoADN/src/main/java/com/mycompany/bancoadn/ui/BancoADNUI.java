@@ -1,13 +1,16 @@
 package com.mycompany.bancoadn.ui;
 
 import com.mycompany.bancoadn.red.ClienteSocket;
+
 import javax.swing.*;
 import java.awt.*;
 
 public class BancoADNUI extends JFrame {
 
     private JTextArea areaSalida;
+
     private String rol;
+
     private int idUsuario;
 
     public BancoADNUI(String rol, int idUsuario) {
@@ -21,28 +24,52 @@ public class BancoADNUI extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
+        // =========================
+        // DESCONECTAR SOCKET
+        // =========================
+        addWindowListener(new java.awt.event.WindowAdapter() {
+
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+
+                ClienteSocket.desconectar();
+            }
+        });
+
+        // =========================
+        // TÍTULO
+        // =========================
         JLabel lblTitulo = new JLabel("", SwingConstants.CENTER);
-        lblTitulo.setIcon(new ImageIcon("dna_146c.gif"));
+
+        lblTitulo.setIcon(new ImageIcon("dna_146c.gif") );
 
         getContentPane().setBackground(Color.BLACK);
 
         JPanel panelBotones = new JPanel();
+
         panelBotones.setBackground(Color.BLACK);
 
-        // ================= CLIENTE =================
+        // =========================
+        // CLIENTE
+        // =========================
         if (rol.equals("CLIENTE")) {
 
             JTextField txtDescripcion = new JTextField(15);
+
             JTextField txtIdPerfil = new JTextField(5);
 
             JButton btnRegistrar = boton("Registrar Perfil");
+
             JButton btnConsultar = boton("Consultar Mi Perfil");
+
             JButton btnEditar = boton("Editar Perfil");
 
             JLabel lblId = new JLabel("ID Perfil:");
+
             lblId.setForeground(Color.WHITE);
 
             JLabel lblDesc = new JLabel("Descripción:");
+
             lblDesc.setForeground(Color.WHITE);
 
             panelBotones.add(lblId);
@@ -51,49 +78,53 @@ public class BancoADNUI extends JFrame {
             panelBotones.add(lblDesc);
             panelBotones.add(txtDescripcion);
 
-            // 🔹 REGISTRAR
+            // =========================
+            // REGISTRAR
+            // =========================
             btnRegistrar.addActionListener(e -> {
 
                 String descripcion = txtDescripcion.getText().trim();
 
                 if (descripcion.isEmpty()) {
-                    JOptionPane.showMessageDialog(this,
-                            "Ingrese una descripción");
+
+                    JOptionPane.showMessageDialog(this, "Ingrese descripción");
+
                     return;
                 }
 
-                String res = ClienteSocket.enviar(
-                        "REGISTRAR," + idUsuario + "," + descripcion
-                );
+                String res = ClienteSocket.enviar("REGISTRAR," + idUsuario + "," + descripcion);
 
                 mostrar(res);
             });
 
-            // 🔹 CONSULTAR
+            // =========================
+            // CONSULTAR
+            // =========================
             btnConsultar.addActionListener(e -> {
 
-                String res = ClienteSocket.enviar(
-                        "CONSULTAR," + idUsuario
-                );
+                String res = ClienteSocket.enviar("CONSULTAR," + idUsuario);
 
                 mostrar(res);
             });
 
-            // 🔹 EDITAR
+            // =========================
+            // EDITAR
+            // =========================
             btnEditar.addActionListener(e -> {
 
                 String idPerfilTxt = txtIdPerfil.getText().trim();
+
                 String desc = txtDescripcion.getText().trim();
 
                 if (idPerfilTxt.isEmpty() || desc.isEmpty()) {
-                    JOptionPane.showMessageDialog(this,
-                            "Complete todos los campos");
+
+                    JOptionPane.showMessageDialog(this, "Complete todos los campos"
+                    );
+
                     return;
                 }
 
-                String res = ClienteSocket.enviar(
-                        "EDITAR," + idPerfilTxt + "," + desc + ",activo"
-                );
+                String res = ClienteSocket.enviar("EDITAR," + idPerfilTxt + "," + desc + ",activo");
 
                 mostrar(res);
             });
@@ -103,46 +134,44 @@ public class BancoADNUI extends JFrame {
             panelBotones.add(btnEditar);
         }
 
-        // ================= ADMIN =================
+        // =========================
+        // ADMIN
+        // =========================
         else if (rol.equals("ADMIN")) {
 
             JButton btnListar = boton("Listar Perfiles");
+
             JButton btnConsultar = boton("Consultar Perfiles");
+
             JButton btnEliminar = boton("Eliminar Perfil");
 
-            // 🔹 LISTAR
+            // =========================
+            // LISTAR
+            // =========================
             btnListar.addActionListener(e -> {
 
-                String res = ClienteSocket.enviar("LISTAR");
-
-                mostrar(res);
+                mostrar(ClienteSocket.enviar("LISTAR"));
             });
 
-            // 🔹 CONSULTAR
+            // =========================
+            // CONSULTAR
+            // =========================
             btnConsultar.addActionListener(e -> {
 
-                String res = ClienteSocket.enviar("CONSULTAR_TODOS");
-
-                mostrar(res);
+                mostrar(ClienteSocket.enviar("LISTAR"));
             });
 
-            // 🔹 ELIMINAR
+            // =========================
+            // ELIMINAR
+            // =========================
             btnEliminar.addActionListener(e -> {
 
-                String id = JOptionPane.showInputDialog(
-                        this,
-                        "ID del perfil:"
-                );
+                String id = JOptionPane.showInputDialog(this, "ID del perfil:" );
 
-                if (id == null || id.trim().isEmpty()) {
-                    return;
+                if (id != null && !id.isEmpty()) {
+
+                    mostrar(ClienteSocket.enviar("ELIMINAR," + id));
                 }
-
-                String res = ClienteSocket.enviar(
-                        "ELIMINAR," + id
-                );
-
-                mostrar(res);
             });
 
             panelBotones.add(btnListar);
@@ -151,19 +180,28 @@ public class BancoADNUI extends JFrame {
         }
 
         // =========================
-        // ÁREA DE SALIDA
+        // ÁREA SALIDA
         // =========================
         areaSalida = new JTextArea();
 
         areaSalida.setEditable(false);
-        areaSalida.setPreferredSize(new Dimension(115, 115));
-        areaSalida.setBackground(Color.BLACK);
-        areaSalida.setForeground(Color.WHITE);
-        areaSalida.setFont(new Font("Consolas", Font.PLAIN, 14));
 
+        areaSalida.setPreferredSize(new Dimension(115, 115));
+
+        areaSalida.setBackground(Color.BLACK);
+
+        areaSalida.setForeground(Color.WHITE);
+
+        JScrollPane scroll =  new JScrollPane(areaSalida);
+
+        // =========================
+        // ADD
+        // =========================
         add(lblTitulo, BorderLayout.NORTH);
+
         add(panelBotones, BorderLayout.CENTER);
-        add(new JScrollPane(areaSalida), BorderLayout.SOUTH);
+
+        add(scroll, BorderLayout.SOUTH);
     }
 
     // =========================
@@ -171,17 +209,7 @@ public class BancoADNUI extends JFrame {
     // =========================
     private void mostrar(String res) {
 
-        if (res == null) {
-
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Sin respuesta del servidor"
-            );
-
-            return;
-        }
-
-        if (res.startsWith("ERROR")) {
+        if (res == null || res.startsWith("ERROR")) {
 
             JOptionPane.showMessageDialog(this, res);
 
@@ -192,13 +220,14 @@ public class BancoADNUI extends JFrame {
     }
 
     // =========================
-    // BOTONES ESTILO
+    // BOTÓN ESTILO
     // =========================
     private JButton boton(String txt) {
 
         JButton b = new JButton(txt);
 
         b.setBackground(Color.BLUE);
+
         b.setForeground(Color.WHITE);
 
         return b;

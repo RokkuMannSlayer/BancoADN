@@ -1,30 +1,64 @@
 package com.mycompany.bancoadn.red;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
 
 public class ClienteSocket {
 
     private static final String HOST = "localhost";
+
     private static final int PUERTO = 5000;
 
-    public static String enviar(String mensaje) {
+    private static Socket socket;
 
-        try (
-            Socket socket = new Socket(HOST, PUERTO);
+    private static PrintWriter salida;
 
-            PrintWriter salida = new PrintWriter(
-                    socket.getOutputStream(),
-                    true
-            );
+    private static BufferedReader entrada;
 
-            BufferedReader entrada = new BufferedReader(
-                    new InputStreamReader(
-                            socket.getInputStream()
-                    )
-            );
+    // =========================
+    // CONECTAR
+    // =========================
 
-        ) {
+    /**
+     *
+     * @throws Exception
+     */
+    public static synchronized void conectar() throws Exception {
+
+        // YA CONECTADO
+        if (socket != null
+                &&
+            socket.isConnected()
+                &&
+            !socket.isClosed()) {
+
+            return;
+        }
+
+        socket = new Socket(HOST, PUERTO);
+
+        salida = new PrintWriter(
+                socket.getOutputStream(),
+                true
+        );
+
+        entrada = new BufferedReader(
+                new InputStreamReader(
+                        socket.getInputStream()
+                )
+        );
+    }
+
+    // =========================
+    // ENVIAR
+    // =========================
+    public static synchronized String enviar(String mensaje) {
+
+        try {
+
+            conectar();
 
             salida.println(mensaje);
 
@@ -33,6 +67,23 @@ public class ClienteSocket {
         } catch (Exception e) {
 
             return "ERROR," + e.getMessage();
+        }
+    }
+
+    // =========================
+    // DESCONECTAR
+    // =========================
+    public static synchronized void desconectar() {
+
+        try {
+
+            if (socket != null) {
+                socket.close();
+            }
+
+        } catch (Exception e) {
+
+            System.out.println("Error cerrando socket: " + e.getMessage());
         }
     }
 }
