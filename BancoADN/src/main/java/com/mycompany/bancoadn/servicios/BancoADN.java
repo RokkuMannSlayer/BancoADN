@@ -12,34 +12,19 @@ public class BancoADN {
     // =========================
     // LOGIN
     // =========================
-    public String login(
-            String email,
-            String password
-    ) {
+    public String login(String email, String password) {
 
         try {
 
-            List<Usuario> usuarios =
-                    GestorArchivos.leerUsuarios();
+            List<Usuario> usuarios = GestorArchivos.leerUsuarios();
 
             for (Usuario u : usuarios) {
 
-                if (u.getEmail().equals(email)
-                        &&
-                    u.getPassword().equals(password)) {
+                if (u.getEmail().equals(email) && u.getPassword().equals(password)) {
 
-                    GestorArchivos.guardarLog(
-                            new LogSistema(
-                                    "LOGIN",
-                                    email,
-                                    u.getRol()
-                            )
-                    );
+                    GestorArchivos.guardarLog(new LogSistema("LOGIN", email, u.getRol()));
 
-                    return "OK,"
-                            + u.getRol()
-                            + ","
-                            + u.getIdUsuario();
+                    return "OK," + u.getRol() + "," + u.getIdUsuario();
                 }
             }
 
@@ -54,17 +39,11 @@ public class BancoADN {
     // =========================
     // REGISTRAR USUARIO
     // =========================
-    public String registrarCliente(
-            String nombre,
-            String email,
-            String password,
-            String dni
-    ) {
+    public String registrarCliente(String nombre, String email, String password, String dni) {
 
         try {
 
-            List<Usuario> usuarios =
-                    GestorArchivos.leerUsuarios();
+            List<Usuario> usuarios = GestorArchivos.leerUsuarios();
 
             for (Usuario u : usuarios) {
 
@@ -79,14 +58,7 @@ public class BancoADN {
 
             int nuevoId = usuarios.size() + 1;
 
-            Usuario usuario = new Usuario(
-                    nuevoId,
-                    nombre,
-                    email,
-                    password,
-                    dni,
-                    "CLIENTE"
-            );
+            Usuario usuario = new Usuario(nuevoId, nombre, email, password, dni, "CLIENTE");
 
             GestorArchivos.guardarUsuario(usuario);
 
@@ -101,21 +73,15 @@ public class BancoADN {
     // =========================
     // REGISTRAR PERFIL
     // =========================
-    public String registrarPerfil(
-            int idCliente,
-            String descripcion
-    ) {
+    public String registrarPerfil(int idCliente, String descripcion) {
 
         try {
 
-            List<PerfilGenetico> perfiles =
-                    GestorArchivos.leerPerfiles();
+            List<PerfilGenetico> perfiles = GestorArchivos.leerPerfiles();
 
             for (PerfilGenetico p : perfiles) {
 
-                if (p.getIdCliente() == idCliente
-                        &&
-                    p.getEstado().equals("activo")) {
+                if (p.getIdCliente() == idCliente && p.getEstado().equals("activo")) {
 
                     return "ERROR,Ya tiene perfil";
                 }
@@ -123,14 +89,7 @@ public class BancoADN {
 
             int nuevoId = perfiles.size() + 1;
 
-            PerfilGenetico perfil =
-                    new PerfilGenetico(
-                            nuevoId,
-                            descripcion,
-                            "activo",
-                            idCliente,
-                            1
-                    );
+            PerfilGenetico perfil = new PerfilGenetico(nuevoId, descripcion, "activo", idCliente, 1 );
 
             GestorArchivos.guardarPerfil(perfil);
 
@@ -145,17 +104,13 @@ public class BancoADN {
     // =========================
     // CONSULTAR PERFIL
     // =========================
-    public String consultarPerfilCliente(
-            int idCliente
-    ) {
+    public String consultarPerfilCliente(int idCliente) {
 
         try {
 
-            List<PerfilGenetico> perfiles =
-                    GestorArchivos.leerPerfiles();
+            List<PerfilGenetico> perfiles = GestorArchivos.leerPerfiles();
 
-            List<Usuario> usuarios =
-                    GestorArchivos.leerUsuarios();
+            List<Usuario> usuarios = GestorArchivos.leerUsuarios();
 
             String nombre = "";
             String dni = "";
@@ -173,24 +128,9 @@ public class BancoADN {
 
             for (PerfilGenetico p : perfiles) {
 
-                if (p.getIdCliente() == idCliente
-                        &&
-                    p.getEstado().equals("activo")) {
+                if (p.getIdCliente() == idCliente && p.getEstado().equals("activo")) {
 
-                    return "ID Perfil: "
-                            + p.getIdPerfil()
-
-                            + " | Descripción: "
-                            + p.getDescripcion()
-
-                            + " | Estado: "
-                            + p.getEstado()
-
-                            + " | Cliente: "
-                            + nombre
-
-                            + " | DNI: "
-                            + dni;
+                    return "ID Perfil: " + p.getIdPerfil() + " | Descripción: " + p.getDescripcion() + " | Estado: " + p.getEstado() + " | Cliente: " + nombre + " | DNI: " + dni;
                 }
             }
 
@@ -205,17 +145,11 @@ public class BancoADN {
     // =========================
     // EDITAR PERFIL
     // =========================
-    public String editarPerfilGenetico(
-            int idPerfil,
-            String descripcion,
-            String estado,
-            int idAdmin
-    ) {
+    public String editarPerfilGenetico(int idPerfil, String descripcion, String estado, int idAdmin) {
 
         try {
 
-            List<PerfilGenetico> perfiles =
-                    GestorArchivos.leerPerfiles();
+            List<PerfilGenetico> perfiles = GestorArchivos.leerPerfiles();
 
             boolean encontrado = false;
 
@@ -249,14 +183,11 @@ public class BancoADN {
     // =========================
     // ELIMINAR PERFIL
     // =========================
-    public String eliminarPerfil(
-            int idPerfil
-    ) {
+    public String eliminarPerfil(int idPerfil) {
 
         try {
 
-            List<PerfilGenetico> perfiles =
-                    GestorArchivos.leerPerfiles();
+            List<PerfilGenetico> perfiles = GestorArchivos.leerPerfiles();
 
             boolean encontrado = false;
 
@@ -292,14 +223,11 @@ public class BancoADN {
 
         try {
 
-            List<PerfilGenetico> perfiles =
-                    GestorArchivos.leerPerfiles();
+            List<PerfilGenetico> perfiles = GestorArchivos.leerPerfiles();
 
-            List<Usuario> usuarios =
-                    GestorArchivos.leerUsuarios();
+            List<Usuario> usuarios = GestorArchivos.leerUsuarios();
 
-            StringBuilder sb =
-                    new StringBuilder();
+            StringBuilder sb = new StringBuilder();
 
             for (PerfilGenetico p : perfiles) {
 
@@ -307,28 +235,14 @@ public class BancoADN {
 
                 for (Usuario u : usuarios) {
 
-                    if (u.getIdUsuario()
-                            ==
-                        p.getIdCliente()) {
+                    if (u.getIdUsuario() == p.getIdCliente()) {
 
                         nombre = u.getNombre();
                         break;
                     }
                 }
 
-                sb.append("ID: ")
-                        .append(p.getIdPerfil())
-
-                        .append(" | Cliente: ")
-                        .append(nombre)
-
-                        .append(" | Descripción: ")
-                        .append(p.getDescripcion())
-
-                        .append(" | Estado: ")
-                        .append(p.getEstado())
-
-                        .append("\n");
+                sb.append("ID: ").append(p.getIdPerfil()).append(" | Cliente: ").append(nombre).append(" | Descripción: ").append(p.getDescripcion()).append(" | Estado: ").append(p.getEstado()).append("\n");
             }
 
             return sb.toString();

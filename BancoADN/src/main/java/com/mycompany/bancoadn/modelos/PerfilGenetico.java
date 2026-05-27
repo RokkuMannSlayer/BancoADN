@@ -11,11 +11,7 @@ public class PerfilGenetico implements Serializable {
     private int idCliente;
     private int idAdmin;
 
-    public PerfilGenetico(int idPerfil,
-                          String descripcion,
-                          String estado,
-                          int idCliente,
-                          int idAdmin) {
+    public PerfilGenetico(int idPerfil, String descripcion, String estado, int idCliente, int idAdmin) {
 
         this.idPerfil = idPerfil;
         this.descripcion = descripcion;
@@ -58,10 +54,6 @@ public class PerfilGenetico implements Serializable {
 
     @Override
     public String toString() {
-        return idPerfil + ";" +
-               descripcion + ";" +
-               estado + ";" +
-               idCliente + ";" +
-               idAdmin;
+        return idPerfil + ";" + descripcion + ";" + estado + ";" + idCliente + ";" + idAdmin;
     }
 }

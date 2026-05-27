@@ -14,14 +14,7 @@ public class Usuario implements Serializable {
     // =========================
     // CONSTRUCTOR
     // =========================
-    public Usuario(
-            int idUsuario,
-            String nombre,
-            String email,
-            String password,
-            String dni,
-            String rol
-    ) {
+    public Usuario(int idUsuario, String nombre, String email, String password, String dni, String rol) {
 
         this.idUsuario = idUsuario;
         this.nombre = nombre;

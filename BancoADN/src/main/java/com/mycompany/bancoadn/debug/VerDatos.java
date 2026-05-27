@@ -23,8 +23,7 @@ public class VerDatos {
 
         System.out.println("\n===== USUARIOS =====");
 
-        List<Usuario> usuarios =
-                GestorArchivos.leerUsuarios();
+        List<Usuario> usuarios = GestorArchivos.leerUsuarios();
 
         if (usuarios.isEmpty()) {
             System.out.println("Sin usuarios");
@@ -50,8 +49,7 @@ public class VerDatos {
 
         System.out.println("\n===== PERFILES =====");
 
-        List<PerfilGenetico> perfiles =
-                GestorArchivos.leerPerfiles();
+        List<PerfilGenetico> perfiles = GestorArchivos.leerPerfiles();
 
         if (perfiles.isEmpty()) {
             System.out.println("Sin perfiles");
@@ -77,8 +75,7 @@ public class VerDatos {
 
         System.out.println("\n===== LOGS =====");
 
-        List<LogSistema> logs =
-                GestorArchivos.leerLogs();
+        List<LogSistema> logs = GestorArchivos.leerLogs();
 
         if (logs.isEmpty()) {
             System.out.println("Sin logs");

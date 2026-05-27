@@ -37,35 +37,20 @@ public class GestorArchivos {
 
         if (!existeAdmin) {
 
-            Usuario admin = new Usuario(
-                    1,
-                    "Admin Principal",
-                    "admin@banco.com",
-                    "1234",
-                    "00000000",
-                    "ADMIN"
-            );
+            Usuario admin = new Usuario(1, "Admin Principal", "admin@banco.com", "1234", "00000000", "ADMIN");
 
             usuarios.add(admin);
 
             escribirArchivo(ARCHIVO_USUARIOS, usuarios);
 
-            guardarLog(
-                    new LogSistema(
-                            "ADMIN_DEFAULT",
-                            admin.getEmail(),
-                            "Admin principal creado"
-                    )
-            );
+            guardarLog(new LogSistema( "ADMIN_DEFAULT", admin.getEmail(), "Admin principal creado"));
         }
     }
 
     // =========================
     // USUARIOS
     // =========================
-    public static synchronized void guardarUsuario(
-            Usuario usuario
-    ) {
+    public static synchronized void guardarUsuario(Usuario usuario) {
 
         List<Usuario> usuarios = leerUsuarios();
 
@@ -88,9 +73,7 @@ public class GestorArchivos {
     // =========================
     // PERFILES
     // =========================
-    public static synchronized void guardarPerfil(
-            PerfilGenetico perfil
-    ) {
+    public static synchronized void guardarPerfil(PerfilGenetico perfil) {
 
         List<PerfilGenetico> perfiles = leerPerfiles();
 
@@ -98,13 +81,7 @@ public class GestorArchivos {
 
         escribirArchivo(ARCHIVO_PERFILES, perfiles);
 
-        guardarLog(
-                new LogSistema(
-                        "REGISTRO_PERFIL",
-                        String.valueOf(perfil.getIdCliente()),
-                        "Perfil registrado"
-                )
-        );
+        guardarLog(new LogSistema("REGISTRO_PERFIL", String.valueOf(perfil.getIdCliente()), "Perfil registrado" ));
     }
 
     public static synchronized List<PerfilGenetico> leerPerfiles() {
@@ -112,27 +89,17 @@ public class GestorArchivos {
         return (List<PerfilGenetico>) leerArchivo(ARCHIVO_PERFILES);
     }
 
-    public static synchronized void actualizarPerfiles(
-            List<PerfilGenetico> perfiles
-    ) {
+    public static synchronized void actualizarPerfiles(List<PerfilGenetico> perfiles) {
 
         escribirArchivo(ARCHIVO_PERFILES, perfiles);
 
-        guardarLog(
-                new LogSistema(
-                        "ACTUALIZAR_PERFILES",
-                        "SISTEMA",
-                        "Perfiles actualizados"
-                )
-        );
+        guardarLog(new LogSistema("ACTUALIZAR_PERFILES", "SISTEMA", "Perfiles actualizados"));
     }
 
     // =========================
     // LOGS
     // =========================
-    public static synchronized void guardarLog(
-            LogSistema log
-    ) {
+    public static synchronized void guardarLog(LogSistema log) {
 
         List<LogSistema> logs = leerLogs();
 
@@ -151,21 +118,13 @@ public class GestorArchivos {
     // =========================
     private static synchronized void escribirArchivo(String archivo, Object objeto) {
 
-            try (
-                    ObjectOutputStream oos =
-                            new ObjectOutputStream(
-                                    new FileOutputStream(archivo)
-                            )
-            ) {
+            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(archivo))) {
 
                 oos.writeObject(objeto);
 
             } catch (Exception e) {
 
-                System.out.println(
-                        "Error escribiendo archivo: "
-                                + e.getMessage()
-                );
+                System.out.println( "Error escribiendo archivo: " + e.getMessage());
             }
         }
 
@@ -177,9 +136,7 @@ public class GestorArchivos {
             return new ArrayList<>();
         }
 
-        try (ObjectInputStream ois =
-                    new ObjectInputStream(
-                            new FileInputStream(file))) {
+        try (ObjectInputStream ois = new ObjectInputStream( new FileInputStream(file))) {
 
             return ois.readObject();
 
@@ -189,10 +146,7 @@ public class GestorArchivos {
 
         } catch (Exception e) {
 
-            System.out.println(
-                    "Error leyendo archivo: "
-                    + e.getMessage()
-            );
+            System.out.println("Error leyendo archivo: " + e.getMessage());
 
             return new ArrayList<>();
         }

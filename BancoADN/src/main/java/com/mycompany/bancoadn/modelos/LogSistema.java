@@ -10,11 +10,7 @@ public class LogSistema implements Serializable {
     private String descripcion;
     private LocalDateTime fecha;
 
-    public LogSistema(
-            String accion,
-            String usuario,
-            String descripcion
-    ) {
+    public LogSistema(String accion, String usuario, String descripcion) {
 
         this.accion = accion;
         this.usuario = usuario;
@@ -49,11 +45,6 @@ public class LogSistema implements Serializable {
     @Override
     public String toString() {
 
-        return "[" + fecha + "] "
-                + accion
-                + " | "
-                + usuario
-                + " | "
-                + descripcion;
+        return "[" + fecha + "] " + accion + " | " + usuario + " | " + descripcion;
     }
 }

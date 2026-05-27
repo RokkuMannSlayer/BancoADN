@@ -28,27 +28,16 @@ public class ClienteSocket {
     public static synchronized void conectar() throws Exception {
 
         // YA CONECTADO
-        if (socket != null
-                &&
-            socket.isConnected()
-                &&
-            !socket.isClosed()) {
+        if (socket != null && socket.isConnected() && !socket.isClosed()) {
 
             return;
         }
 
         socket = new Socket(HOST, PUERTO);
 
-        salida = new PrintWriter(
-                socket.getOutputStream(),
-                true
-        );
+        salida = new PrintWriter(socket.getOutputStream(), true);
 
-        entrada = new BufferedReader(
-                new InputStreamReader(
-                        socket.getInputStream()
-                )
-        );
+        entrada = new BufferedReader(new InputStreamReader(socket.getInputStream()));
     }
 
     // =========================

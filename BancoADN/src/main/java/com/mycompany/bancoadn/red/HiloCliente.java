@@ -43,9 +43,7 @@ public class HiloCliente extends Thread {
                 // IGNORAR VACÍOS
                 if (comando.isEmpty()) {
 
-                    salida.println(
-                            "ERROR,Comando vacío"
-                    );
+                    salida.println("ERROR,Comando vacío");
 
                     continue;
                 }
@@ -81,10 +79,7 @@ public class HiloCliente extends Thread {
 
             } catch (Exception e) {
 
-                System.out.println(
-                        "Error cerrando socket: "
-                                + e.getMessage()
-                );
+                System.out.println("Error cerrando socket: " + e.getMessage());
             }
         }
     }
@@ -188,9 +183,7 @@ public class HiloCliente extends Thread {
                         return "ERROR,Faltan datos";
                     }
 
-                    return banco.consultarPerfilCliente(
-
-                            Integer.parseInt(datos[1]));
+                    return banco.consultarPerfilCliente(Integer.parseInt(datos[1]));
 
                 // =========================
                 // EDITAR PERFIL

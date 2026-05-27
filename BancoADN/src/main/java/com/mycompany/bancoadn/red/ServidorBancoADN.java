@@ -12,8 +12,7 @@ public class ServidorBancoADN {
     // =========================
     // USUARIOS CONECTADOS
     // =========================
-    public static ConcurrentHashMap<String, Boolean>
-            usuariosConectados = new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<String, Boolean> usuariosConectados = new ConcurrentHashMap<>();
 
     // =========================
     // UI
