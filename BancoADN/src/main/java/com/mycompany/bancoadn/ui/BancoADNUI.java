@@ -1,7 +1,8 @@
 package com.mycompany.bancoadn.ui;
 
 import com.mycompany.bancoadn.red.ClienteSocket;
-
+import com.mycompany.bancoadn.modelos.TipoSangre;
+import java.io.File;
 import javax.swing.*;
 import java.awt.*;
 
@@ -9,17 +10,11 @@ public class BancoADNUI extends JFrame {
 
     private JTextArea areaSalida;
 
-    private String rol;
-
-    private int idUsuario;
-
     public BancoADNUI(String rol, int idUsuario) {
 
-        this.rol = rol;
-        this.idUsuario = idUsuario;
 
         setTitle("Banco de ADN");
-        setSize(800, 500);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
@@ -45,7 +40,7 @@ public class BancoADNUI extends JFrame {
 
         getContentPane().setBackground(Color.BLACK);
 
-        JPanel panelBotones = new JPanel();
+        JPanel panelBotones = new JPanel(new GridLayout(0, 2));
 
         panelBotones.setBackground(Color.BLACK);
 
@@ -54,7 +49,23 @@ public class BancoADNUI extends JFrame {
         // =========================
         if (rol.equals("CLIENTE")) {
 
-            JTextField txtDescripcion = new JTextField(15);
+            JTextField txtFoto = new JTextField(15);
+
+            JComboBox<TipoSangre> cmbSangre = new JComboBox<>(TipoSangre.values());
+
+            JTextField txtOjos = new JTextField(10);
+
+            JTextField txtPelo = new JTextField(10);
+
+            JTextField txtConducta = new JTextField(10);
+
+            JTextField txtAltura = new JTextField(5);
+
+            JTextField txtPeso = new JTextField(5);
+
+            JLabel lblIMC = new JLabel("IMC: 0.0");
+
+            lblIMC.setForeground(Color.WHITE);
 
             JTextField txtIdPerfil = new JTextField(5);
 
@@ -63,6 +74,20 @@ public class BancoADNUI extends JFrame {
             JButton btnConsultar = boton("Consultar Mi Perfil");
 
             JButton btnEditar = boton("Editar Perfil");
+            
+            JButton btnFoto = boton("Seleccionar Foto");
+
+            btnFoto.addActionListener(e -> {
+
+                JFileChooser chooser = new JFileChooser();
+
+                if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+
+                    File archivo = chooser.getSelectedFile();
+
+                    txtFoto.setText(archivo.getAbsolutePath());
+                }
+            });
 
             JLabel lblId = new JLabel("ID Perfil:");
 
@@ -75,25 +100,66 @@ public class BancoADNUI extends JFrame {
             panelBotones.add(lblId);
             panelBotones.add(txtIdPerfil);
 
-            panelBotones.add(lblDesc);
-            panelBotones.add(txtDescripcion);
+            panelBotones.add(new JLabel("Foto"));
+            panelBotones.add(txtFoto);
+
+            panelBotones.add(btnFoto);
+
+            panelBotones.add(new JLabel("Sangre"));
+            panelBotones.add(cmbSangre);
+
+            panelBotones.add(new JLabel("Ojos"));
+            panelBotones.add(txtOjos);
+
+            panelBotones.add(new JLabel("Pelo"));
+            panelBotones.add(txtPelo);
+
+            panelBotones.add(new JLabel("Conducta"));
+            panelBotones.add(txtConducta);
+
+            panelBotones.add(new JLabel("Altura"));
+            panelBotones.add(txtAltura);
+
+            panelBotones.add(new JLabel("Peso"));
+            panelBotones.add(txtPeso);
+
+            panelBotones.add(lblIMC);
 
             // =========================
             // REGISTRAR
             // =========================
             btnRegistrar.addActionListener(e -> {
 
-                String descripcion = txtDescripcion.getText().trim();
+                String foto = txtFoto.getText();
 
-                if (descripcion.isEmpty()) {
+                String sangre = cmbSangre.getSelectedItem().toString();
 
-                    JOptionPane.showMessageDialog(this, "Ingrese descripción");
+                String ojos = txtOjos.getText();
 
-                    return;
-                }
+                String pelo = txtPelo.getText();
 
-                String res = ClienteSocket.enviar("REGISTRAR," + idUsuario + "," + descripcion);
+                String conducta = txtConducta.getText();
 
+                double altura = Double.parseDouble(txtAltura.getText());
+
+                double peso = Double.parseDouble(txtPeso.getText());
+
+                double imc = peso / (altura * altura);
+
+                lblIMC.setText("IMC: " + String.format("%.2f", imc));
+
+                String res = ClienteSocket.enviar(
+                    "REGISTRAR,"
+                    + idUsuario + ","
+                    + foto + ","
+                    + sangre + ","
+                    + ojos + ","
+                    + pelo + ","
+                    + conducta + ","
+                    + altura + ","
+                    + peso
+                );
+                
                 mostrar(res);
             });
 
@@ -114,17 +180,32 @@ public class BancoADNUI extends JFrame {
 
                 String idPerfilTxt = txtIdPerfil.getText().trim();
 
-                String desc = txtDescripcion.getText().trim();
+                String foto = txtFoto.getText();
 
-                if (idPerfilTxt.isEmpty() || desc.isEmpty()) {
+                String sangre = cmbSangre.getSelectedItem().toString();
 
-                    JOptionPane.showMessageDialog(this, "Complete todos los campos"
-                    );
+                String ojos = txtOjos.getText();
 
-                    return;
-                }
+                String pelo = txtPelo.getText();
 
-                String res = ClienteSocket.enviar("EDITAR," + idPerfilTxt + "," + desc + ",activo");
+                String conducta = txtConducta.getText();
+
+                double altura = Double.parseDouble(txtAltura.getText());
+
+                double peso = Double.parseDouble(txtPeso.getText());
+
+                String res = ClienteSocket.enviar(
+
+                    "EDITAR,"
+                    + idPerfilTxt + ","
+                    + foto + ","
+                    + sangre + ","
+                    + ojos + ","
+                    + pelo + ","
+                    + conducta + ","
+                    + altura + ","
+                    + peso + ",activo"
+                );
 
                 mostrar(res);
             });

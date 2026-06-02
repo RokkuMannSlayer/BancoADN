@@ -166,12 +166,21 @@ public class HiloCliente extends Thread {
                 // =========================
                 case "REGISTRAR":
 
-                    if (datos.length < 3) {
-
+                    if (datos.length < 9) {
                         return "ERROR,Faltan datos";
                     }
 
-                    return banco.registrarPerfil(Integer.parseInt(datos[1]), datos[2]);
+                    return banco.registrarPerfil(
+
+                        Integer.parseInt(datos[1]), // idCliente
+                        datos[2], // fotoPerfil
+                        datos[3], // tipoSangre
+                        datos[4], // colorOjos
+                        datos[5], // colorPelo
+                        datos[6], // tendenciaConductual
+                        Double.parseDouble(datos[7]), // altura
+                        Double.parseDouble(datos[8])  // peso
+                    );
 
                 // =========================
                 // CONSULTAR PERFIL
@@ -190,12 +199,23 @@ public class HiloCliente extends Thread {
                 // =========================
                 case "EDITAR":
 
-                    if (datos.length < 4) {
-
+                    if (datos.length < 10) {
                         return "ERROR,Faltan datos";
                     }
 
-                    return banco.editarPerfilGenetico(Integer.parseInt(datos[1]), datos[2], datos[3], 1);
+                    return banco.editarPerfilGenetico(
+
+                        Integer.parseInt(datos[1]), // idPerfil
+                        datos[2], // fotoPerfil
+                        datos[3], // tipoSangre
+                        datos[4], // colorOjos
+                        datos[5], // colorPelo
+                        datos[6], // tendenciaConductual
+                        Double.parseDouble(datos[7]), // altura
+                        Double.parseDouble(datos[8]), // peso
+                        datos[9], // estado
+                        1
+                    );
 
                 // =========================
                 // LISTAR
