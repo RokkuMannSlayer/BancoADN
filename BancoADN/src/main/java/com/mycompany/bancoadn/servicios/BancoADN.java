@@ -189,6 +189,42 @@ public class BancoADN {
             return "ERROR," + e.getMessage();
         }
     }
+    public String consultarPerfilPorIdPerfil(int idPerfil) {
+        try {
+            List<PerfilGenetico> perfiles = GestorArchivos.leerPerfiles();
+            List<Usuario> usuarios = GestorArchivos.leerUsuarios();
+
+            for (PerfilGenetico p : perfiles) {
+                if (p.getIdPerfil() == idPerfil && p.getEstado().equals("activo")) {
+                    String nombre = "";
+                    String dni = "";
+
+                    for (Usuario u : usuarios) {
+                        if (u.getIdUsuario() == p.getIdCliente()) {
+                            nombre = u.getNombre();
+                            dni = u.getDni();
+                            break;
+                        }
+                    }
+
+                    return "ID Perfil: " + p.getIdPerfil()
+                            + " | Cliente: " + nombre
+                            + " | DNI: " + dni
+                            + " | Sangre: " + p.getTipoSangre()
+                            + " | Ojos: " + p.getColorOjos()
+                            + " | Pelo: " + p.getColorPelo()
+                            + " | Conducta: " + p.getTendenciaConductual()
+                            + " | Altura: " + p.getAltura()
+                            + " | Peso: " + p.getPeso()
+                            + " | IMC: " + String.format("%.2f", p.getImc())
+                            + " | Estado: " + p.getEstado();
+                }
+            }
+            return "Perfil no existe";
+        } catch (Exception e) {
+            return "ERROR," + e.getMessage();
+        }
+    }
 
     // =========================
     // EDITAR PERFIL

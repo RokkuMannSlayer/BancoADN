@@ -10,60 +10,42 @@ import java.net.Socket;
 public class HiloCliente extends Thread {
 
     private final Socket socket;
-
     private final BancoADN banco = new BancoADN();
-
     private String usuario = "Desconocido";
 
     public HiloCliente(Socket socket) {
-
         this.socket = socket;
     }
 
     @Override
     public void run() {
-
         try (
-
-            BufferedReader entrada = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-            PrintWriter salida = new PrintWriter(socket.getOutputStream(), true)
-
-        ) {
-
+                BufferedReader entrada = new BufferedReader(new InputStreamReader(socket.getInputStream())); PrintWriter salida = new PrintWriter(socket.getOutputStream(), true)) {
             String comando;
 
             // =========================
             // LOOP DE COMANDOS
             // =========================
             while ((comando = entrada.readLine()) != null) {
-
                 comando = comando.trim();
 
                 // IGNORAR VACÍOS
                 if (comando.isEmpty()) {
-
                     salida.println("ERROR,Comando vacío");
-
                     continue;
                 }
 
                 String respuesta = procesar(comando);
-
                 salida.println(respuesta);
             }
 
         } catch (Exception e) {
-
             System.out.println("Error cliente: " + e.getMessage());
-
         } finally {
-
             // =========================
             // LIBERAR SESIÓN
             // =========================
             synchronized (ServidorBancoADN.usuariosConectados) {
-
                 ServidorBancoADN.usuariosConectados.remove(usuario);
             }
 
@@ -71,30 +53,23 @@ public class HiloCliente extends Thread {
             ServidorBancoADN.actualizarUsuarios();
 
             try {
-
                 if (socket != null && !socket.isClosed()) {
-
                     socket.close();
                 }
-
             } catch (Exception e) {
-
                 System.out.println("Error cerrando socket: " + e.getMessage());
             }
         }
     }
 
     // =========================
-    // PROCESAR COMANDOS
+    // PROCESAR COMANDOS (CORREGIDO)
     // =========================
     private String procesar(String comando) {
-
         try {
-
             String[] datos = comando.split(",");
 
             if (datos.length == 0) {
-
                 return "ERROR,Comando inválido";
             }
 
@@ -104,152 +79,123 @@ public class HiloCliente extends Thread {
                 // LOGIN
                 // =========================
                 case "LOGIN":
-
                     if (datos.length < 3) {
-
                         return "ERROR,Faltan datos";
                     }
-
                     String email = datos[1].trim().toLowerCase();
-
                     String password = datos[2].trim();
 
-                    // =========================
-                    // VALIDAR LOGIN
-                    // =========================
                     String respuestaLogin = banco.login(email, password);
 
-                    // LOGIN FALLIDO
                     if (!respuestaLogin.startsWith("OK")) {
-
                         return respuestaLogin;
                     }
 
-                    // =========================
-                    // SEMÁFORO
-                    // =========================
                     Boolean anterior = ServidorBancoADN.usuariosConectados.putIfAbsent(email, true);
-                    
                     if (anterior != null) {
-
                         return "ERROR,El usuario ya tiene una sesión activa";
                     }
 
-                    // GUARDAR USUARIO
                     usuario = email;
-
-                    // ACTUALIZAR VENTANA
                     ServidorBancoADN.actualizarUsuarios();
-
                     return respuestaLogin;
 
                 // =========================
                 // REGISTRO
                 // =========================
                 case "REGISTRO":
-
                     if (datos.length < 5) {
-
                         return "ERROR,Faltan datos";
                     }
-
                     return banco.registrarCliente(
-
                             datos[1], // nombre
                             datos[3], // email
                             datos[4], // password
-                            datos[2]  // dni
+                            datos[2] // dni
                     );
 
                 // =========================
                 // REGISTRAR PERFIL
                 // =========================
                 case "REGISTRAR":
-
                     if (datos.length < 9) {
                         return "ERROR,Faltan datos";
                     }
-
                     return banco.registrarPerfil(
-
-                        Integer.parseInt(datos[1]), // idCliente
-                        datos[2], // fotoPerfil
-                        datos[3], // tipoSangre
-                        datos[4], // colorOjos
-                        datos[5], // colorPelo
-                        datos[6], // tendenciaConductual
-                        Double.parseDouble(datos[7]), // altura
-                        Double.parseDouble(datos[8])  // peso
+                            Integer.parseInt(datos[1]), // idCliente
+                            datos[2], // fotoPerfil
+                            datos[3], // tipoSangre
+                            datos[4], // colorOjos
+                            datos[5], // colorPelo
+                            datos[6], // tendenciaConductual
+                            Double.parseDouble(datos[7]), // altura
+                            Double.parseDouble(datos[8]) // peso
                     );
 
                 // =========================
-                // CONSULTAR PERFIL
+                // NUEVO CASE: CONSULTAR POR ID DE PERFIL DIRECTO (OPCIÓN A)
                 // =========================
-                case "CONSULTAR":
-
+                case "CONSULTAR_ID":
                     if (datos.length < 2) {
-
                         return "ERROR,Faltan datos";
                     }
+                    // Invoca la nueva función que creaste en tu lógica de negocio
+                    return banco.consultarPerfilPorIdPerfil(Integer.parseInt(datos[1]));
 
+                // =========================
+                // CONSULTAR POR ID DE CLIENTE GLOBAL
+                // =========================
+                case "CONSULTAR":
+                    if (datos.length < 2) {
+                        return "ERROR,Faltan datos";
+                    }
                     return banco.consultarPerfilCliente(Integer.parseInt(datos[1]));
 
                 // =========================
                 // EDITAR PERFIL
                 // =========================
                 case "EDITAR":
-
                     if (datos.length < 10) {
                         return "ERROR,Faltan datos";
                     }
-
                     return banco.editarPerfilGenetico(
-
-                        Integer.parseInt(datos[1]), // idPerfil
-                        datos[2], // fotoPerfil
-                        datos[3], // tipoSangre
-                        datos[4], // colorOjos
-                        datos[5], // colorPelo
-                        datos[6], // tendenciaConductual
-                        Double.parseDouble(datos[7]), // altura
-                        Double.parseDouble(datos[8]), // peso
-                        datos[9], // estado
-                        1
+                            Integer.parseInt(datos[1]), // idPerfil
+                            datos[2], // fotoPerfil
+                            datos[3], // tipoSangre
+                            datos[4], // colorOjos
+                            datos[5], // colorPelo
+                            datos[6], // tendenciaConductual
+                            Double.parseDouble(datos[7]), // altura
+                            Double.parseDouble(datos[8]), // peso
+                            datos[9], // estado
+                            1
                     );
 
                 // =========================
                 // LISTAR
                 // =========================
                 case "LISTAR":
-
                     return banco.listarPerfilesTexto();
 
                 // =========================
                 // ELIMINAR
                 // =========================
                 case "ELIMINAR":
-
                     if (datos.length < 2) {
-
                         return "ERROR,Faltan datos";
                     }
-
                     return banco.eliminarPerfil(Integer.parseInt(datos[1]));
 
                 // =========================
                 // DESCONOCIDO
                 // =========================
                 default:
-
                     return "ERROR,Comando desconocido";
             }
 
         } catch (NumberFormatException e) {
-
             return "ERROR,Formato numérico inválido";
-
         } catch (Exception e) {
-
             return "ERROR," + e.getMessage();
         }
     }
