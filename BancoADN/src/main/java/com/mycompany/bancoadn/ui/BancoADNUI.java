@@ -123,7 +123,18 @@ public class BancoADNUI extends JFrame {
         btnCerrarSesion.setPreferredSize(new Dimension(140, 30));
 
         btnCerrarSesion.addActionListener(e -> {
+            
+            try {
+                
+                String respuesta = ClienteSocket.enviar("LOGOUT");
+                
+                System.out.println(respuesta);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            
             dispose();
+            
             SwingUtilities.invokeLater(() -> Sign.main(new String[]{}));
         });
 
