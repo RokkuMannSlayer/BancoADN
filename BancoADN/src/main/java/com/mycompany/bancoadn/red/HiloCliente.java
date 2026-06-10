@@ -55,20 +55,14 @@ public class HiloCliente extends Thread {
 
         } finally {
 
-            if(usuario != null && !usuario.equals("Desconocido")) {
-                
-                SemaforoUsuarios.salir(usuario);
-                
-                synchronized (ServidorBancoADN.usuariosConectados) {
-                    
-                    ServidorBancoADN.usuariosConectados.remove(usuario);
-                }
-                ServidorBancoADN.actualizarUsuarios();
-            }
+            liberarSesion();
 
             try {
 
-                socket.close();
+                if(!socket.isClosed()) {
+                    
+                    socket.close();
+                }
 
             } catch (Exception e) {
                 
@@ -90,6 +84,10 @@ public class HiloCliente extends Thread {
 
             ServidorBancoADN.usuariosConectados.remove(usuario);
         }
+        
+        usuario = "Desconocido";
+        
+        System.out.println("[SESIÓN LIBERADA] " + usuario);
 
         ServidorBancoADN.actualizarUsuarios();
     }
@@ -141,6 +139,8 @@ public class HiloCliente extends Thread {
                     }
 
                     ServidorBancoADN.actualizarUsuarios();
+                    
+                    System.out.println("[LOGIN] " + email);
 
                     return respuestaLogin;
 
@@ -252,17 +252,12 @@ public class HiloCliente extends Thread {
 
                     if(usuario != null && !usuario.equals("Desconocido")) {
                         
-                        SemaforoUsuarios.salir(usuario);
-                        
-                        synchronized (ServidorBancoADN.usuariosConectados) {
-                            
-                            ServidorBancoADN.usuariosConectados.remove(usuario);
-                        }
-                        
-                        ServidorBancoADN.actualizarUsuarios();
+                        liberarSesion();
                         
                         usuario = "Desconocido";
                     }
+                    
+                    System.out.println("[LOGOUT] " + usuario);
 
                     return "OK,Logout";
 

@@ -1,60 +1,64 @@
 package com.mycompany.bancoadn.red;
 
+import com.mycompany.bancoadn.concurrencia.SemaforoUsuarios;
+
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ServidorBancoADN {
 
-    // =========================
-    // USUARIOS CONECTADOS
-    // =========================
     public static ConcurrentHashMap<String, Boolean> usuariosConectados = new ConcurrentHashMap<>();
 
-    // =========================
-    // UI
-    // =========================
     private static JTextArea areaUsuarios;
 
-    // =========================
-    // MAIN
-    // =========================
     public static void main(String[] args) {
 
         crearVentana();
 
         int puerto = 5000;
 
-        try (ServerSocket servidor = new ServerSocket(puerto)) {
+        try {
 
-            System.out.println("Servidor iniciado en puerto "+ puerto);
+            InetAddress ipLocal = InetAddress.getLocalHost();
+
+            System.out.println("Servidor iniciado");
+
+            System.out.println("IP Local: " + ipLocal.getHostAddress());
+
+            System.out.println("Puerto: " + puerto);
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+
+        try (ServerSocket servidor = new ServerSocket(puerto)) {
 
             while (true) {
 
                 Socket cliente = servidor.accept();
 
-                System.out.println("Nuevo cliente conectado");
+                System.out.println("Cliente conectado desde: " + cliente.getInetAddress().getHostAddress() );
 
                 new HiloCliente(cliente).start();
             }
 
         } catch (IOException e) {
 
-            System.out.println("Error servidor: " + e.getMessage());
+            System.out.println("Error servidor: "  + e.getMessage());
         }
     }
 
-    // =========================
-    // VENTANA
-    // =========================
     private static void crearVentana() {
 
-        JFrame frame = new JFrame("Usuarios Conectados");
+        JFrame frame = new JFrame("Banco ADN - Servidor");
 
-        frame.setSize(400, 500);
+        frame.setSize(500, 600);
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -71,18 +75,19 @@ public class ServidorBancoADN {
         frame.add(scroll);
 
         frame.setVisible(true);
+
+        actualizarUsuarios();
     }
 
-    // =========================
-    // ACTUALIZAR USUARIOS
-    // =========================
     public static synchronized void actualizarUsuarios() {
 
         SwingUtilities.invokeLater(() -> {
 
-            StringBuilder sb =  new StringBuilder();
+            StringBuilder sb = new StringBuilder();
 
-            sb.append("USUARIOS CONECTADOS\n\n");
+            sb.append("===== SERVIDOR BANCO ADN =====\n\n");
+
+            sb.append("Usuarios conectados: ").append(SemaforoUsuarios.cantidadUsuarios()).append("\n\n");
 
             if (usuariosConectados.isEmpty()) {
 
@@ -99,4 +104,4 @@ public class ServidorBancoADN {
             areaUsuarios.setText(sb.toString());
         });
     }
-}   
+}
