@@ -38,12 +38,12 @@ public class ServidorBancoADN {
         }
 
         try (ServerSocket servidor = new ServerSocket(puerto)) {
-
+            
+            System.out.println("Servidor escuchando en: " + servidor.getInetAddress() + ":" + servidor.getLocalPort());
+            
             while (true) {
 
                 Socket cliente = servidor.accept();
-
-                System.out.println("Cliente conectado desde: " + cliente.getInetAddress().getHostAddress() );
 
                 new HiloCliente(cliente).start();
             }
