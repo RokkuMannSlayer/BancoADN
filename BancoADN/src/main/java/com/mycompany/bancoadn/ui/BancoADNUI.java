@@ -205,13 +205,10 @@ public class BancoADNUI extends JFrame {
             return;
         }
 
-        // ========================================================
-        // AJUSTE DE ÍNDICES PARA ELIMINAR EL DESFASAJE
-        // ========================================================
+        // Mapeo alineado descartando desfasajes
         String id = limpiarValor(campos[0]);
         String fotoPath = campos[1].trim();
 
-        // Saltamos el DNI (campos[2]) si no lo usás en el diseño, alineando el resto:
         String sangre = limpiarValor(campos[3]);
         String ojos = limpiarValor(campos[4]);
         String pelo = limpiarValor(campos[5]);
@@ -219,10 +216,10 @@ public class BancoADNUI extends JFrame {
         String altura = limpiarValor(campos[7]);
         String peso = (campos.length >= 9) ? limpiarValor(campos[8]) : "0.0";
 
-        // Forzamos que ESTADO solo muestre "activo" o "inactivo" limpiando residuos numéricos
+        // Forzar visualización de estado limpio
         String estado = (campos.length >= 10) ? limpiarValor(campos[9]) : "activo";
         if (!estado.equalsIgnoreCase("activo") && !estado.equalsIgnoreCase("inactivo")) {
-            estado = "activo"; // Valor por defecto seguro si el servidor envía otra cosa en ese índice
+            estado = "activo";
         }
 
         JPanel panelCentrado = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 30));
@@ -240,7 +237,7 @@ public class BancoADNUI extends JFrame {
         gbc.insets = new Insets(8, 12, 8, 12);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // FOTO (Columna 0)
+        // FOTO
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridheight = 4;
@@ -265,38 +262,34 @@ public class BancoADNUI extends JFrame {
 
         gbc.gridheight = 1;
 
-        // ========================================================
-        // DISTRIBUCIÓN EN MATRIZ (RECUADROS CON VALOR PURO)
-        // ========================================================
-        // Fila 0: ID y ESTADO (Limpio)
+        // Fila 0
         gbc.gridx = 1;
         gbc.gridy = 0;
         card.add(crearCuadroDato("ID", id), gbc);
         gbc.gridx = 2;
         card.add(crearCuadroDato("ESTADO", estado.toLowerCase()), gbc);
 
-        // Fila 1: OJOS e SANGRE
+        // Fila 1
         gbc.gridx = 1;
         gbc.gridy = 1;
         card.add(crearCuadroDato("COLOR DE OJOS", ojos), gbc);
         gbc.gridx = 2;
         card.add(crearCuadroDato("TIPO DE SANGRE", sangre), gbc);
 
-        // Fila 2: PELO y ALTURA
+        // Fila 2
         gbc.gridx = 1;
         gbc.gridy = 2;
         card.add(crearCuadroDato("COLOR DE PELO", pelo), gbc);
         gbc.gridx = 2;
         card.add(crearCuadroDato("ALTURA", altura.contains("m") ? altura : altura + " m"), gbc);
 
-        // Fila 3: TENDENCIA y PESO
+        // Fila 3
         gbc.gridx = 1;
         gbc.gridy = 3;
         card.add(crearCuadroDato("TENDENCIA", tendencia), gbc);
         gbc.gridx = 2;
         card.add(crearCuadroDato("PESO", peso.contains("kg") ? peso : peso + " kg"), gbc);
 
-        // BOTÓN EDITAR
         if (rolUsuario.equals("CLIENTE")) {
             gbc.gridx = 1;
             gbc.gridy = 4;
@@ -321,21 +314,6 @@ public class BancoADNUI extends JFrame {
         scrollContenedor.setViewportView(panelCentrado);
         scrollContenedor.revalidate();
         scrollContenedor.repaint();
-    }
-
-    /**
-     * Método auxiliar corto que remueve etiquetas repetidas del backend (ej:
-     * transforma "Ojos: Cafe" en "Cafe")
-     */
-    private String limpiarValor(String texto) {
-        if (texto == null) {
-            return "";
-        }
-        String t = texto.trim();
-        if (t.contains(":")) {
-            return t.substring(t.indexOf(":") + 1).trim();
-        }
-        return t;
     }
 
     private JPanel crearCuadroDato(String etiqueta, String valor) {
@@ -428,7 +406,9 @@ public class BancoADNUI extends JFrame {
         JTextField txtAltura = new JTextField(12);
         JTextField txtPeso = new JTextField(12);
 
-        // EXTRA: Cargar los datos actuales en los campos si es edición para mejorar el UX
+        // ========================================================
+        // PRECARGA DE DATOS SIN ARRASTRES NI PREFIJOS EN EDICIÓN
+        // ========================================================
         if (esEdicion) {
             String actualRaw = ClienteSocket.enviar("CONSULTAR," + idUsuarioActual);
             if (actualRaw != null && !actualRaw.startsWith("ERROR") && !actualRaw.contains("No tiene perfil")) {
@@ -440,11 +420,24 @@ public class BancoADNUI extends JFrame {
                         lblNombreFoto.setText(fileFoto.getName());
                     }
 
-                    txtOjos.setText(camposActuales[3].trim());
-                    txtPelo.setText(camposActuales[4].trim());
-                    txtConducta.setText(camposActuales[5].trim());
-                    txtAltura.setText(camposActuales[6].trim().replace(" m", ""));
-                    txtPeso.setText(camposActuales[7].trim().replace(" kg", ""));
+                    // Sincronización estricta de índices limpiando los prefijos duplicados
+                    txtOjos.setText(limpiarValor(camposActuales[4]));
+                    txtPelo.setText(limpiarValor(camposActuales[5]));
+                    txtConducta.setText(limpiarValor(camposActuales[6]));
+                    txtAltura.setText(limpiarValor(camposActuales[7]).replace(" m", ""));
+
+                    if (camposActuales.length >= 9) {
+                        txtPeso.setText(limpiarValor(camposActuales[8]).replace(" kg", ""));
+                    }
+
+                    // Seleccionar el tipo de sangre correcto en el ComboBox
+                    String sangreLimpia = limpiarValor(camposActuales[3]);
+                    for (int i = 0; i < cmbSangre.getItemCount(); i++) {
+                        if (cmbSangre.getItemAt(i).toString().equalsIgnoreCase(sangreLimpia)) {
+                            cmbSangre.setSelectedIndex(i);
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -511,7 +504,6 @@ public class BancoADNUI extends JFrame {
                             + txtOjos.getText().trim() + "," + txtPelo.getText().trim() + "," + txtConducta.getText().trim() + "," + alt + "," + pso
                     );
                 } else {
-                    // Sincronizado exactamente con el orden de lectura del Servidor
                     res = ClienteSocket.enviar(
                             "EDITAR," + idUsuarioActual + "," + rutaFotoSeleccionada + "," + cmbSangre.getSelectedItem().toString() + ","
                             + txtOjos.getText().trim() + "," + txtPelo.getText().trim() + "," + txtConducta.getText().trim() + "," + alt + "," + pso + ",activo"
@@ -519,7 +511,6 @@ public class BancoADNUI extends JFrame {
                 }
 
                 if (!res.startsWith("ERROR")) {
-                    // Refrescar la tarjeta con los nuevos datos limpios
                     procesarYMostrarCard(ClienteSocket.enviar("CONSULTAR," + idUsuarioActual));
                     dialogoForm.dispose();
                 } else {
@@ -554,5 +545,16 @@ public class BancoADNUI extends JFrame {
         b.setFont(new Font("SansSerif", Font.BOLD, 12));
         b.setPreferredSize(new Dimension(150, 30));
         return b;
+    }
+
+    private String limpiarValor(String texto) {
+        if (texto == null) {
+            return "";
+        }
+        String t = texto.trim();
+        if (t.contains(":")) {
+            return t.substring(t.indexOf(":") + 1).trim();
+        }
+        return t;
     }
 }
