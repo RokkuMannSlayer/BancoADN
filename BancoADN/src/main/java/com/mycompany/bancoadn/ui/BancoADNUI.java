@@ -5,13 +5,13 @@ import com.mycompany.bancoadn.modelos.TipoSangre;
 import com.mycompany.bancoadn.Sign;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.io.File;
 
 public class BancoADNUI extends JFrame {
 
-    private JTextArea areaSalida;
     private JTable tablaDatos;
     private DefaultTableModel modeloTabla;
     private JScrollPane scrollContenedor;
@@ -19,7 +19,6 @@ public class BancoADNUI extends JFrame {
     private final String rolUsuario;
     private final int idUsuarioActual;
 
-    // VARIABLE GLOBAL PARA GUARDAR LA RUTA ABSOLUTA DE LA IMAGEN
     private String rutaFotoSeleccionada = "sin_foto.jpg";
 
     public BancoADNUI(String rol, int idUsuario) {
@@ -31,23 +30,19 @@ public class BancoADNUI extends JFrame {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
-
-        // =========================
-        // TÍTULO DE LA INTERFAZ
-        // =========================
-        JLabel lblTitulo = new JLabel("", SwingConstants.CENTER);
-        lblTitulo.setIcon(new ImageIcon("dna_146c.gif"));
-        lblTitulo.setBorder(new EmptyBorder(15, 10, 15, 10));
+        
+        // Contenedor principal de la ventana para fondo negro uniforme
         getContentPane().setBackground(Color.BLACK);
 
-        // =========================
-        // PANEL CENTRAL: BOTONES REDUCIDOS
-        // =========================
-        JPanel panelCentral = new JPanel(new GridBagLayout());
-        panelCentral.setBackground(Color.BLACK);
-        panelCentral.setBorder(new EmptyBorder(30, 30, 30, 30));
+        // ===================================
+        // PANEL SUPERIOR CONTENEDOR
+        // ===================================
+        JPanel panelSuperiorEncabezado = new JPanel(new BorderLayout());
+        panelSuperiorEncabezado.setBackground(Color.BLACK);
+        panelSuperiorEncabezado.setBorder(new EmptyBorder(10, 20, 10, 20));
 
-        JPanel panelBotonera = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        // Botonera centralizada
+        JPanel panelBotonera = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 15));
         panelBotonera.setBackground(Color.BLACK);
 
         if (rolUsuario.equals("CLIENTE")) {
@@ -57,16 +52,15 @@ public class BancoADNUI extends JFrame {
             panelBotonera.add(btnConsultar);
             panelBotonera.add(btnEditar);
 
-            btnConsultar.addActionListener(e -> mostrarTexto(ClienteSocket.enviar("CONSULTAR," + idUsuarioActual)));
+            btnConsultar.addActionListener(e -> realizarConsultaCard("CONSULTAR," + idUsuarioActual));
             btnEditar.addActionListener(e -> abrirVentanaCuestionarioCliente(true));
 
             SwingUtilities.invokeLater(() -> {
                 String check = ClienteSocket.enviar("CONSULTAR," + idUsuarioActual);
                 if (check == null || check.equals("No tiene perfil") || check.startsWith("ERROR")) {
-                    mostrarTexto("No se detectó un perfil activo. Cargando cuestionario obligatorio...");
                     abrirVentanaCuestionarioCliente(false);
                 } else {
-                    mostrarTexto(check);
+                    procesarYMostrarCard(check);
                 }
             });
 
@@ -84,14 +78,20 @@ public class BancoADNUI extends JFrame {
             btnEliminar.addActionListener(e -> abrirPantallaBusquedaAdmin("ELIMINAR"));
         }
 
-        panelCentral.add(panelBotonera);
+        // SE MUEVE EL GIF A UN COSTADO (Derecha del panel superior)
+        JLabel lblGifCostado = new JLabel();
+        lblGifCostado.setIcon(new ImageIcon("dna_146c.gif"));
+        lblGifCostado.setHorizontalAlignment(SwingConstants.CENTER);
 
-        // =========================
-        // PANEL INFERIOR (CONSOLA MIXTA)
-        // =========================
-        JPanel panelInferior = new JPanel(new BorderLayout());
-        panelInferior.setBackground(Color.BLACK);
-        panelInferior.setBorder(new EmptyBorder(5, 25, 15, 25));
+        panelSuperiorEncabezado.add(panelBotonera, BorderLayout.CENTER);
+        panelSuperiorEncabezado.add(lblGifCostado, BorderLayout.EAST);
+
+        // ===================================
+        // PANEL INFERIOR / CENTRAL DE CONTENIDO
+        // ===================================
+        JPanel panelContenidoPrincipal = new JPanel(new BorderLayout());
+        panelContenidoPrincipal.setBackground(Color.BLACK);
+        panelContenidoPrincipal.setBorder(new EmptyBorder(5, 25, 15, 25));
 
         String[] columnas = {"Información de los Perfiles Registrados en el Sistema"};
         modeloTabla = new DefaultTableModel(columnas, 0);
@@ -99,19 +99,17 @@ public class BancoADNUI extends JFrame {
         tablaDatos.setBackground(new Color(25, 25, 25));
         tablaDatos.setForeground(Color.WHITE);
         tablaDatos.setGridColor(Color.DARK_GRAY);
-        tablaDatos.setRowHeight(24);
+        tablaDatos.setRowHeight(26);
 
-        areaSalida = new JTextArea();
-        areaSalida.setEditable(false);
-        areaSalida.setBackground(new Color(15, 15, 15));
-        areaSalida.setForeground(new Color(0, 230, 110));
-        areaSalida.setFont(new Font("Monospaced", Font.PLAIN, 13));
-        areaSalida.setBorder(new EmptyBorder(10, 10, 10, 10));
+        // Inicializamos el scroll con la tabla embebida por defecto para evitar pantallas vacías en el Admin
+        scrollContenedor = new JScrollPane(tablaDatos);
+        scrollContenedor.setBackground(Color.BLACK);
+        scrollContenedor.getViewport().setBackground(Color.BLACK);
+        scrollContenedor.setBorder(new LineBorder(Color.DARK_GRAY, 1));
+        
+        panelContenidoPrincipal.add(scrollContenedor, BorderLayout.CENTER);
 
-        scrollContenedor = new JScrollPane(areaSalida);
-        scrollContenedor.setPreferredSize(new Dimension(150, 220));
-        panelInferior.add(scrollContenedor, BorderLayout.CENTER);
-
+        // Botón inferior derecho de salida
         JPanel panelEsquina = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 10));
         panelEsquina.setBackground(Color.BLACK);
 
@@ -123,27 +121,21 @@ public class BancoADNUI extends JFrame {
         btnCerrarSesion.setPreferredSize(new Dimension(140, 30));
 
         btnCerrarSesion.addActionListener(e -> {
-            
             try {
-                
-                String respuesta = ClienteSocket.enviar("LOGOUT");
-                
-                System.out.println(respuesta);
+                ClienteSocket.enviar("LOGOUT");
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
-            
             dispose();
-            
             SwingUtilities.invokeLater(() -> Sign.main(new String[]{}));
         });
 
         panelEsquina.add(btnCerrarSesion);
-        panelInferior.add(panelEsquina, BorderLayout.SOUTH);
+        panelContenidoPrincipal.add(panelEsquina, BorderLayout.SOUTH);
 
-        add(lblTitulo, BorderLayout.NORTH);
-        add(panelCentral, BorderLayout.CENTER);
-        add(panelInferior, BorderLayout.SOUTH);
+        // Ensamblado final en el JFrame
+        add(panelSuperiorEncabezado, BorderLayout.NORTH);
+        add(panelContenidoPrincipal, BorderLayout.CENTER);
     }
 
     private void abrirPantallaBusquedaAdmin(String accion) {
@@ -178,19 +170,13 @@ public class BancoADNUI extends JFrame {
                 }
 
                 if (accion.equals("CONSULTAR")) {
-                    String respuesta = ClienteSocket.enviar("CONSULTAR_ID," + idNumerico);
-                    if (respuesta == null || respuesta.trim().isEmpty() || respuesta.startsWith("ERROR")
-                            || respuesta.contains("Perfil no existe")) {
-                        limpiarTablaAAsfaltoVacio();
-                        mostrarTexto(respuesta != null ? respuesta : "Perfil no encontrado.");
-                    } else {
-                        cargarDatosEnTabla(respuesta);
-                    }
+                    realizarConsultaCard("CONSULTAR_ID," + idNumerico);
                 } else {
                     int conf = JOptionPane.showConfirmDialog(this, "¿Eliminar perfil ID: " + idNumerico + "?", "Confirmar", JOptionPane.YES_NO_OPTION);
                     if (conf == JOptionPane.YES_OPTION) {
                         String delRes = ClienteSocket.enviar("ELIMINAR," + idNumerico);
-                        mostrarTexto(delRes);
+                        JOptionPane.showMessageDialog(this, delRes);
+                        limpiarTablaAAsfaltoVacio();
                     }
                 }
             } catch (NumberFormatException ex) {
@@ -202,6 +188,145 @@ public class BancoADNUI extends JFrame {
         ventanaBusqueda.add(txtId);
         ventanaBusqueda.add(btnEjecutar);
         ventanaBusqueda.setVisible(true);
+    }
+
+    private void realizarConsultaCard(String comando) {
+        String respuesta = ClienteSocket.enviar(comando);
+        if (respuesta == null || respuesta.trim().isEmpty() || respuesta.startsWith("ERROR") || respuesta.contains("no existe")) {
+            JPanel panelErr = new JPanel(new FlowLayout());
+            panelErr.setBackground(Color.BLACK);
+            JLabel lblErr = new JLabel(respuesta != null ? respuesta : "Perfil no encontrado.");
+            lblErr.setForeground(Color.RED);
+            lblErr.setFont(new Font("SansSerif", Font.BOLD, 14));
+            panelErr.add(lblErr);
+            scrollContenedor.setViewportView(panelErr);
+        } else {
+            procesarYMostrarCard(respuesta);
+        }
+    }
+
+    private void procesarYMostrarCard(String rawData) {
+        String[] campos = rawData.split("\\|");
+        if (campos.length < 8) {
+            return; 
+        }
+
+        String id = campos[0].trim();
+        String fotoPath = campos[1].trim();
+        String sangre = campos[2].trim();
+        String ojos = campos[3].trim();
+        String pelo = campos[4].trim();
+        String tendencia = campos[5].trim();
+        String altura = campos[6].trim();
+        String peso = campos[7].trim();
+        String estado = (campos.length == 9) ? campos[8].trim() : "activo";
+
+        JPanel panelCentrado = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 30));
+        panelCentrado.setBackground(Color.BLACK);
+
+        JPanel card = new JPanel(new GridBagLayout());
+        card.setBackground(new Color(20, 20, 20));
+        card.setBorder(BorderFactory.createCompoundBorder(
+                new LineBorder(Color.DARK_GRAY, 1),
+                new EmptyBorder(20, 25, 20, 25)
+        ));
+        card.setPreferredSize(new Dimension(680, 280));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(8, 12, 8, 12);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        // FOTO DEL USUARIO
+        gbc.gridx = 0; gbc.gridy = 0;
+        gbc.gridheight = 4;
+        gbc.anchor = GridBagConstraints.NORTH;
+        
+        JLabel lblFoto = new JLabel();
+        lblFoto.setPreferredSize(new Dimension(100, 115));
+        lblFoto.setBorder(new LineBorder(Color.GRAY, 1));
+        lblFoto.setHorizontalAlignment(SwingConstants.CENTER);
+
+        File f = new File(fotoPath);
+        if (f.exists() && !fotoPath.equals("sin_foto.jpg")) {
+            ImageIcon imgIcon = new ImageIcon(fotoPath);
+            Image imgEscalada = imgIcon.getImage().getScaledInstance(100, 115, Image.SCALE_SMOOTH);
+            lblFoto.setIcon(new ImageIcon(imgEscalada));
+        } else {
+            lblFoto.setText("FOTO");
+            lblFoto.setForeground(Color.LIGHT_GRAY);
+            lblFoto.setFont(new Font("SansSerif", Font.BOLD, 12));
+        }
+        card.add(lblFoto, gbc);
+
+        gbc.gridheight = 1;
+
+        // FILAS DE LA CUADRÍCULA
+        gbc.gridx = 1; gbc.gridy = 0;
+        card.add(crearCuadroDato("ID #", id), gbc);
+        gbc.gridx = 2;
+        card.add(crearCuadroDato("ESTADO", estado), gbc);
+
+        gbc.gridx = 1; gbc.gridy = 1;
+        card.add(crearCuadroDato("COLOR DE OJOS", ojos), gbc);
+        gbc.gridx = 2;
+        card.add(crearCuadroDato("TIPO DE SANGRE", sangre), gbc);
+
+        gbc.gridx = 1; gbc.gridy = 2;
+        card.add(crearCuadroDato("COLOR DE PELO", pelo), gbc);
+        gbc.gridx = 2;
+        card.add(crearCuadroDato("ALTURA", altura + " m"), gbc);
+
+        gbc.gridx = 1; gbc.gridy = 3;
+        card.add(crearCuadroDato("TENDENCIA", tendencia), gbc);
+        gbc.gridx = 2;
+        card.add(crearCuadroDato("PESO", peso + " kg"), gbc);
+
+        if (rolUsuario.equals("CLIENTE")) {
+            gbc.gridx = 1; gbc.gridy = 4;
+            gbc.gridwidth = 2;
+            gbc.insets = new Insets(15, 10, 5, 10);
+            gbc.fill = GridBagConstraints.NONE;
+            gbc.anchor = GridBagConstraints.CENTER;
+
+            JButton btnEditarCard = new JButton("EDITAR");
+            btnEditarCard.setBackground(new Color(40, 40, 40));
+            btnEditarCard.setForeground(Color.WHITE);
+            btnEditarCard.setFont(new Font("SansSerif", Font.BOLD, 11));
+            btnEditarCard.setBorder(BorderFactory.createCompoundBorder(
+                    new LineBorder(Color.GRAY, 1), new EmptyBorder(5, 20, 5, 20)
+            ));
+            btnEditarCard.setFocusPainted(false);
+            btnEditarCard.addActionListener(e -> abrirVentanaCuestionarioCliente(true));
+            card.add(btnEditarCard, gbc);
+        }
+
+        panelCentrado.add(card);
+        scrollContenedor.setViewportView(panelCentrado);
+        scrollContenedor.revalidate();
+        scrollContenedor.repaint();
+    }
+
+    private JPanel crearCuadroDato(String etiqueta, String valor) {
+        JPanel panelCuadro = new JPanel(new BorderLayout(5, 0));
+        panelCuadro.setBackground(new Color(20, 20, 20));
+
+        JLabel lblE = new JLabel(etiqueta + ": ");
+        lblE.setForeground(Color.WHITE);
+        lblE.setFont(new Font("SansSerif", Font.BOLD, 12));
+
+        JLabel lblV = new JLabel(" " + valor + " ");
+        lblV.setForeground(Color.LIGHT_GRAY);
+        lblV.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        lblV.setBorder(BorderFactory.createCompoundBorder(
+                new LineBorder(Color.DARK_GRAY, 1),
+                new EmptyBorder(3, 8, 3, 8)
+        ));
+        lblV.setOpaque(true);
+        lblV.setBackground(new Color(30, 30, 30));
+
+        panelCuadro.add(lblE, BorderLayout.WEST);
+        panelCuadro.add(lblV, BorderLayout.CENTER);
+        return panelCuadro;
     }
 
     private void cargarDatosEnTabla(String datosRaw) {
@@ -229,19 +354,9 @@ public class BancoADNUI extends JFrame {
         scrollContenedor.repaint();
     }
 
-    private void mostrarTexto(String txt) {
-        scrollContenedor.setViewportView(areaSalida);
-        areaSalida.setText(txt);
-        scrollContenedor.revalidate();
-        scrollContenedor.repaint();
-    }
-
-    // ========================================================
-    // CUESTIONARIO COMPLETO (CON FILTRADO DE IMÁGENES POR BOTÓN)
-    // ========================================================
     private void abrirVentanaCuestionarioCliente(boolean esEdicion) {
         JDialog dialogoForm = new JDialog(this, esEdicion ? "Modificar Mi Perfil Genético" : "Formulario de Registro Obligatorio", true);
-        dialogoForm.setSize(420, 380); // Ajustado levemente el ancho para el layout del botón
+        dialogoForm.setSize(420, 380);
         dialogoForm.setLayout(new GridBagLayout());
         dialogoForm.setLocationRelativeTo(this);
         dialogoForm.getContentPane().setBackground(new Color(25, 25, 25));
@@ -250,10 +365,8 @@ public class BancoADNUI extends JFrame {
         c.insets = new Insets(6, 6, 6, 6);
         c.fill = GridBagConstraints.HORIZONTAL;
 
-        // Reseteamos el path por defecto al abrir el formulario
         rutaFotoSeleccionada = "sin_foto.jpg";
 
-        // Componentes para la selección interactiva de archivos
         JButton btnBuscarFoto = new JButton("Seleccionar Imagen...");
         btnBuscarFoto.setBackground(new Color(60, 60, 60));
         btnBuscarFoto.setForeground(Color.WHITE);
@@ -262,21 +375,17 @@ public class BancoADNUI extends JFrame {
         lblNombreFoto.setForeground(Color.LIGHT_GRAY);
         lblNombreFoto.setFont(new Font("SansSerif", Font.ITALIC, 11));
 
-        // Lógica del explorador de archivos nativo
         btnBuscarFoto.addActionListener(e -> {
             JFileChooser selector = new JFileChooser();
             selector.setDialogTitle("Buscar Foto de Perfil");
-
-            // Filtro estricto para extensiones de imagen
-            javax.swing.filechooser.FileNameExtensionFilter filtro
-                    = new javax.swing.filechooser.FileNameExtensionFilter("Imágenes (JPG, PNG)", "jpg", "jpeg", "png");
+            javax.swing.filechooser.FileNameExtensionFilter filtro = new javax.swing.filechooser.FileNameExtensionFilter("Imágenes (JPG, PNG)", "jpg", "jpeg", "png");
             selector.setFileFilter(filtro);
 
             int resultado = selector.showOpenDialog(dialogoForm);
             if (resultado == JFileChooser.APPROVE_OPTION) {
                 File archivo = selector.getSelectedFile();
-                rutaFotoSeleccionada = archivo.getAbsolutePath(); // Guardamos el path completo para el socket
-                lblNombreFoto.setText(archivo.getName()); // Mostramos solo el nombre en el modal
+                rutaFotoSeleccionada = archivo.getAbsolutePath();
+                lblNombreFoto.setText(archivo.getName());
             }
         });
 
@@ -287,51 +396,40 @@ public class BancoADNUI extends JFrame {
         JTextField txtAltura = new JTextField(12);
         JTextField txtPeso = new JTextField(12);
 
-        // Posicionamiento de los componentes en el GridBagLayout
-        c.gridx = 0;
-        c.gridy = 0;
+        c.gridx = 0; c.gridy = 0;
         dialogoForm.add(modalLabel("Foto Perfil:"), c);
         c.gridx = 1;
-        // Metemos el botón buscador en lugar del viejo JTextField
         dialogoForm.add(btnBuscarFoto, c);
 
-        c.gridx = 1;
-        c.gridy = 1;
-        // Renglón extra para que el cliente verifique visualmente qué archivo cargó
+        c.gridx = 1; c.gridy = 1;
         dialogoForm.add(lblNombreFoto, c);
 
-        c.gridx = 0;
-        c.gridy = 2;
+        c.gridx = 0; c.gridy = 2;
         dialogoForm.add(modalLabel("Tipo Sangre:"), c);
         c.gridx = 1;
         dialogoForm.add(cmbSangre, c);
 
-        c.gridx = 0;
-        c.gridy = 3;
+        c.gridx = 0; c.gridy = 3;
         dialogoForm.add(modalLabel("Color Ojos:"), c);
         c.gridx = 1;
         dialogoForm.add(txtOjos, c);
 
-        c.gridx = 0;
-        c.gridy = 4;
+        c.gridx = 0; c.gridy = 4;
         dialogoForm.add(modalLabel("Color Pelo:"), c);
         c.gridx = 1;
         dialogoForm.add(txtPelo, c);
 
-        c.gridx = 0;
-        c.gridy = 5;
+        c.gridx = 0; c.gridy = 5;
         dialogoForm.add(modalLabel("Conducta:"), c);
         c.gridx = 1;
         dialogoForm.add(txtConducta, c);
 
-        c.gridx = 0;
-        c.gridy = 6;
+        c.gridx = 0; c.gridy = 6;
         dialogoForm.add(modalLabel("Altura (m):"), c);
         c.gridx = 1;
         dialogoForm.add(txtAltura, c);
 
-        c.gridx = 0;
-        c.gridy = 7;
+        c.gridx = 0; c.gridy = 7;
         dialogoForm.add(modalLabel("Peso (kg):"), c);
         c.gridx = 1;
         dialogoForm.add(txtPeso, c);
@@ -346,7 +444,6 @@ public class BancoADNUI extends JFrame {
                 double pso = Double.parseDouble(txtPeso.getText());
                 String res;
 
-                // CAMBIO: Ahora pasamos "rutaFotoSeleccionada" en vez de txtFoto.getText()
                 if (!esEdicion) {
                     res = ClienteSocket.enviar(
                             "REGISTRAR," + idUsuarioActual + "," + rutaFotoSeleccionada + "," + cmbSangre.getSelectedItem().toString() + ","
@@ -359,19 +456,18 @@ public class BancoADNUI extends JFrame {
                     );
                 }
 
-                mostrarTexto(res);
-
                 if (!res.startsWith("ERROR")) {
-                    mostrarTexto(ClienteSocket.enviar("CONSULTAR," + idUsuarioActual));
+                    procesarYMostrarCard(ClienteSocket.enviar("CONSULTAR," + idUsuarioActual));
                     dialogoForm.dispose();
+                } else {
+                    JOptionPane.showMessageDialog(dialogoForm, res);
                 }
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(dialogoForm, "Por favor, valide los campos numéricos.");
             }
         });
 
-        c.gridx = 0;
-        c.gridy = 8;
+        c.gridx = 0; c.gridy = 8;
         c.gridwidth = 2;
         c.anchor = GridBagConstraints.CENTER;
         dialogoForm.add(btnEnviar, c);
