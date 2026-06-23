@@ -19,6 +19,9 @@ public class BancoADNUI extends JFrame {
     private final String rolUsuario;
     private final int idUsuarioActual;
 
+    // Almacena el ID real del perfil genético devuelto por la base de datos
+    private int idPerfilActual = -1;
+
     private String rutaFotoSeleccionada = "sin_foto.jpg";
 
     public BancoADNUI(String rol, int idUsuario) {
@@ -84,7 +87,7 @@ public class BancoADNUI extends JFrame {
         panelSuperiorEncabezado.add(lblGifCostado, BorderLayout.EAST);
 
         // ===================================
-        // PANEL INFERIOR / CENTRAL DE CONTENIDO
+        // PANEL CENTRAL DE CONTENIDO
         // ===================================
         JPanel panelContenidoPrincipal = new JPanel(new BorderLayout());
         panelContenidoPrincipal.setBackground(Color.BLACK);
@@ -205,7 +208,7 @@ public class BancoADNUI extends JFrame {
             return;
         }
 
-        // Mapeo alineado descartando desfasajes
+        // Mapeo estableciendo el orden e índices reales de la BD
         String id = limpiarValor(campos[0]);
         String fotoPath = campos[1].trim();
 
@@ -216,7 +219,13 @@ public class BancoADNUI extends JFrame {
         String altura = limpiarValor(campos[7]);
         String peso = (campos.length >= 9) ? limpiarValor(campos[8]) : "0.0";
 
-        // Forzar visualización de estado limpio
+        // Sincronizamos la variable global con el ID numérico del perfil para usar al editar
+        try {
+            this.idPerfilActual = Integer.parseInt(id);
+        } catch (Exception e) {
+            this.idPerfilActual = -1;
+        }
+
         String estado = (campos.length >= 10) ? limpiarValor(campos[9]) : "activo";
         if (!estado.equalsIgnoreCase("activo") && !estado.equalsIgnoreCase("inactivo")) {
             estado = "activo";
@@ -237,7 +246,7 @@ public class BancoADNUI extends JFrame {
         gbc.insets = new Insets(8, 12, 8, 12);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // FOTO
+        // SECCIÓN FOTO (Columna 0)
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridheight = 4;
@@ -262,6 +271,7 @@ public class BancoADNUI extends JFrame {
 
         gbc.gridheight = 1;
 
+        // Distribución exacta siguiendo tu bosquejo a mano
         // Fila 0
         gbc.gridx = 1;
         gbc.gridy = 0;
@@ -406,9 +416,7 @@ public class BancoADNUI extends JFrame {
         JTextField txtAltura = new JTextField(12);
         JTextField txtPeso = new JTextField(12);
 
-        // ========================================================
-        // PRECARGA DE DATOS SIN ARRASTRES NI PREFIJOS EN EDICIÓN
-        // ========================================================
+        // Carga y aislamiento de valores limpios en el formulario
         if (esEdicion) {
             String actualRaw = ClienteSocket.enviar("CONSULTAR," + idUsuarioActual);
             if (actualRaw != null && !actualRaw.startsWith("ERROR") && !actualRaw.contains("No tiene perfil")) {
@@ -420,7 +428,6 @@ public class BancoADNUI extends JFrame {
                         lblNombreFoto.setText(fileFoto.getName());
                     }
 
-                    // Sincronización estricta de índices limpiando los prefijos duplicados
                     txtOjos.setText(limpiarValor(camposActuales[4]));
                     txtPelo.setText(limpiarValor(camposActuales[5]));
                     txtConducta.setText(limpiarValor(camposActuales[6]));
@@ -430,7 +437,6 @@ public class BancoADNUI extends JFrame {
                         txtPeso.setText(limpiarValor(camposActuales[8]).replace(" kg", ""));
                     }
 
-                    // Seleccionar el tipo de sangre correcto en el ComboBox
                     String sangreLimpia = limpiarValor(camposActuales[3]);
                     for (int i = 0; i < cmbSangre.getItemCount(); i++) {
                         if (cmbSangre.getItemAt(i).toString().equalsIgnoreCase(sangreLimpia)) {
@@ -494,30 +500,40 @@ public class BancoADNUI extends JFrame {
 
         btnEnviar.addActionListener(e -> {
             try {
-                double alt = Double.parseDouble(txtAltura.getText().trim().replace(" m", ""));
-                double pso = Double.parseDouble(txtPeso.getText().trim().replace(" kg", ""));
-                String res;
+                String alt = txtAltura.getText().trim().replace(" m", "");
+                String pso = txtPeso.getText().trim().replace(" kg", "");
 
+                Double.parseDouble(alt);
+                Double.parseDouble(pso);
+
+                String ojos = txtOjos.getText().trim();
+                String pelo = txtPelo.getText().trim();
+                String conducta = txtConducta.getText().trim();
+                String sangre = cmbSangre.getSelectedItem().toString();
+
+                String res;
                 if (!esEdicion) {
                     res = ClienteSocket.enviar(
-                            "REGISTRAR," + idUsuarioActual + "," + rutaFotoSeleccionada + "," + cmbSangre.getSelectedItem().toString() + ","
-                            + txtOjos.getText().trim() + "," + txtPelo.getText().trim() + "," + txtConducta.getText().trim() + "," + alt + "," + pso
+                            "REGISTRAR," + idUsuarioActual + "," + rutaFotoSeleccionada + "," + sangre + ","
+                            + ojos + "," + pelo + "," + conducta + "," + alt + "," + pso
                     );
                 } else {
+                    // Enviamos idPerfilActual para impactar correctamente en la clave primaria de la BD
                     res = ClienteSocket.enviar(
-                            "EDITAR," + idUsuarioActual + "," + rutaFotoSeleccionada + "," + cmbSangre.getSelectedItem().toString() + ","
-                            + txtOjos.getText().trim() + "," + txtPelo.getText().trim() + "," + txtConducta.getText().trim() + "," + alt + "," + pso + ",activo"
+                            "EDITAR," + idPerfilActual + "," + rutaFotoSeleccionada + "," + sangre + ","
+                            + ojos + "," + pelo + "," + conducta + "," + alt + "," + pso + ",activo"
                     );
                 }
 
-                if (!res.startsWith("ERROR")) {
+                if (res != null && !res.startsWith("ERROR")) {
+                    JOptionPane.showMessageDialog(dialogoForm, "¡Perfil actualizado correctamente!");
                     procesarYMostrarCard(ClienteSocket.enviar("CONSULTAR," + idUsuarioActual));
                     dialogoForm.dispose();
                 } else {
-                    JOptionPane.showMessageDialog(dialogoForm, res);
+                    JOptionPane.showMessageDialog(dialogoForm, "Error devuelto por el Servidor:\n" + res);
                 }
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(dialogoForm, "Por favor, valide los campos numéricos.");
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(dialogoForm, "Campos numéricos inválidos. Use formato '1.75' y '80.0'.");
             }
         });
 
