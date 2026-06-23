@@ -30,8 +30,7 @@ public class BancoADNUI extends JFrame {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
-        
-        // Contenedor principal de la ventana para fondo negro uniforme
+
         getContentPane().setBackground(Color.BLACK);
 
         // ===================================
@@ -41,7 +40,6 @@ public class BancoADNUI extends JFrame {
         panelSuperiorEncabezado.setBackground(Color.BLACK);
         panelSuperiorEncabezado.setBorder(new EmptyBorder(10, 20, 10, 20));
 
-        // Botonera centralizada
         JPanel panelBotonera = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 15));
         panelBotonera.setBackground(Color.BLACK);
 
@@ -78,7 +76,6 @@ public class BancoADNUI extends JFrame {
             btnEliminar.addActionListener(e -> abrirPantallaBusquedaAdmin("ELIMINAR"));
         }
 
-        // SE MUEVE EL GIF A UN COSTADO (Derecha del panel superior)
         JLabel lblGifCostado = new JLabel();
         lblGifCostado.setIcon(new ImageIcon("dna_146c.gif"));
         lblGifCostado.setHorizontalAlignment(SwingConstants.CENTER);
@@ -101,15 +98,13 @@ public class BancoADNUI extends JFrame {
         tablaDatos.setGridColor(Color.DARK_GRAY);
         tablaDatos.setRowHeight(26);
 
-        // Inicializamos el scroll con la tabla embebida por defecto para evitar pantallas vacías en el Admin
         scrollContenedor = new JScrollPane(tablaDatos);
         scrollContenedor.setBackground(Color.BLACK);
         scrollContenedor.getViewport().setBackground(Color.BLACK);
         scrollContenedor.setBorder(new LineBorder(Color.DARK_GRAY, 1));
-        
+
         panelContenidoPrincipal.add(scrollContenedor, BorderLayout.CENTER);
 
-        // Botón inferior derecho de salida
         JPanel panelEsquina = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 10));
         panelEsquina.setBackground(Color.BLACK);
 
@@ -133,7 +128,6 @@ public class BancoADNUI extends JFrame {
         panelEsquina.add(btnCerrarSesion);
         panelContenidoPrincipal.add(panelEsquina, BorderLayout.SOUTH);
 
-        // Ensamblado final en el JFrame
         add(panelSuperiorEncabezado, BorderLayout.NORTH);
         add(panelContenidoPrincipal, BorderLayout.CENTER);
     }
@@ -208,18 +202,28 @@ public class BancoADNUI extends JFrame {
     private void procesarYMostrarCard(String rawData) {
         String[] campos = rawData.split("\\|");
         if (campos.length < 8) {
-            return; 
+            return;
         }
 
-        String id = campos[0].trim();
+        // ========================================================
+        // AJUSTE DE ÍNDICES PARA ELIMINAR EL DESFASAJE
+        // ========================================================
+        String id = limpiarValor(campos[0]);
         String fotoPath = campos[1].trim();
-        String sangre = campos[2].trim();
-        String ojos = campos[3].trim();
-        String pelo = campos[4].trim();
-        String tendencia = campos[5].trim();
-        String altura = campos[6].trim();
-        String peso = campos[7].trim();
-        String estado = (campos.length == 9) ? campos[8].trim() : "activo";
+
+        // Saltamos el DNI (campos[2]) si no lo usás en el diseño, alineando el resto:
+        String sangre = limpiarValor(campos[3]);
+        String ojos = limpiarValor(campos[4]);
+        String pelo = limpiarValor(campos[5]);
+        String tendencia = limpiarValor(campos[6]);
+        String altura = limpiarValor(campos[7]);
+        String peso = (campos.length >= 9) ? limpiarValor(campos[8]) : "0.0";
+
+        // Forzamos que ESTADO solo muestre "activo" o "inactivo" limpiando residuos numéricos
+        String estado = (campos.length >= 10) ? limpiarValor(campos[9]) : "activo";
+        if (!estado.equalsIgnoreCase("activo") && !estado.equalsIgnoreCase("inactivo")) {
+            estado = "activo"; // Valor por defecto seguro si el servidor envía otra cosa en ese índice
+        }
 
         JPanel panelCentrado = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 30));
         panelCentrado.setBackground(Color.BLACK);
@@ -236,11 +240,12 @@ public class BancoADNUI extends JFrame {
         gbc.insets = new Insets(8, 12, 8, 12);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // FOTO DEL USUARIO
-        gbc.gridx = 0; gbc.gridy = 0;
+        // FOTO (Columna 0)
+        gbc.gridx = 0;
+        gbc.gridy = 0;
         gbc.gridheight = 4;
         gbc.anchor = GridBagConstraints.NORTH;
-        
+
         JLabel lblFoto = new JLabel();
         lblFoto.setPreferredSize(new Dimension(100, 115));
         lblFoto.setBorder(new LineBorder(Color.GRAY, 1));
@@ -260,29 +265,41 @@ public class BancoADNUI extends JFrame {
 
         gbc.gridheight = 1;
 
-        // FILAS DE LA CUADRÍCULA
-        gbc.gridx = 1; gbc.gridy = 0;
-        card.add(crearCuadroDato("ID #", id), gbc);
+        // ========================================================
+        // DISTRIBUCIÓN EN MATRIZ (RECUADROS CON VALOR PURO)
+        // ========================================================
+        // Fila 0: ID y ESTADO (Limpio)
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        card.add(crearCuadroDato("ID", id), gbc);
         gbc.gridx = 2;
-        card.add(crearCuadroDato("ESTADO", estado), gbc);
+        card.add(crearCuadroDato("ESTADO", estado.toLowerCase()), gbc);
 
-        gbc.gridx = 1; gbc.gridy = 1;
+        // Fila 1: OJOS e SANGRE
+        gbc.gridx = 1;
+        gbc.gridy = 1;
         card.add(crearCuadroDato("COLOR DE OJOS", ojos), gbc);
         gbc.gridx = 2;
         card.add(crearCuadroDato("TIPO DE SANGRE", sangre), gbc);
 
-        gbc.gridx = 1; gbc.gridy = 2;
+        // Fila 2: PELO y ALTURA
+        gbc.gridx = 1;
+        gbc.gridy = 2;
         card.add(crearCuadroDato("COLOR DE PELO", pelo), gbc);
         gbc.gridx = 2;
-        card.add(crearCuadroDato("ALTURA", altura + " m"), gbc);
+        card.add(crearCuadroDato("ALTURA", altura.contains("m") ? altura : altura + " m"), gbc);
 
-        gbc.gridx = 1; gbc.gridy = 3;
+        // Fila 3: TENDENCIA y PESO
+        gbc.gridx = 1;
+        gbc.gridy = 3;
         card.add(crearCuadroDato("TENDENCIA", tendencia), gbc);
         gbc.gridx = 2;
-        card.add(crearCuadroDato("PESO", peso + " kg"), gbc);
+        card.add(crearCuadroDato("PESO", peso.contains("kg") ? peso : peso + " kg"), gbc);
 
+        // BOTÓN EDITAR
         if (rolUsuario.equals("CLIENTE")) {
-            gbc.gridx = 1; gbc.gridy = 4;
+            gbc.gridx = 1;
+            gbc.gridy = 4;
             gbc.gridwidth = 2;
             gbc.insets = new Insets(15, 10, 5, 10);
             gbc.fill = GridBagConstraints.NONE;
@@ -304,6 +321,21 @@ public class BancoADNUI extends JFrame {
         scrollContenedor.setViewportView(panelCentrado);
         scrollContenedor.revalidate();
         scrollContenedor.repaint();
+    }
+
+    /**
+     * Método auxiliar corto que remueve etiquetas repetidas del backend (ej:
+     * transforma "Ojos: Cafe" en "Cafe")
+     */
+    private String limpiarValor(String texto) {
+        if (texto == null) {
+            return "";
+        }
+        String t = texto.trim();
+        if (t.contains(":")) {
+            return t.substring(t.indexOf(":") + 1).trim();
+        }
+        return t;
     }
 
     private JPanel crearCuadroDato(String etiqueta, String valor) {
@@ -396,40 +428,69 @@ public class BancoADNUI extends JFrame {
         JTextField txtAltura = new JTextField(12);
         JTextField txtPeso = new JTextField(12);
 
-        c.gridx = 0; c.gridy = 0;
+        // EXTRA: Cargar los datos actuales en los campos si es edición para mejorar el UX
+        if (esEdicion) {
+            String actualRaw = ClienteSocket.enviar("CONSULTAR," + idUsuarioActual);
+            if (actualRaw != null && !actualRaw.startsWith("ERROR") && !actualRaw.contains("No tiene perfil")) {
+                String[] camposActuales = actualRaw.split("\\|");
+                if (camposActuales.length >= 8) {
+                    rutaFotoSeleccionada = camposActuales[1].trim();
+                    File fileFoto = new File(rutaFotoSeleccionada);
+                    if (fileFoto.exists()) {
+                        lblNombreFoto.setText(fileFoto.getName());
+                    }
+
+                    txtOjos.setText(camposActuales[3].trim());
+                    txtPelo.setText(camposActuales[4].trim());
+                    txtConducta.setText(camposActuales[5].trim());
+                    txtAltura.setText(camposActuales[6].trim().replace(" m", ""));
+                    txtPeso.setText(camposActuales[7].trim().replace(" kg", ""));
+                }
+            }
+        }
+
+        c.gridx = 0;
+        c.gridy = 0;
         dialogoForm.add(modalLabel("Foto Perfil:"), c);
         c.gridx = 1;
         dialogoForm.add(btnBuscarFoto, c);
 
-        c.gridx = 1; c.gridy = 1;
+        c.gridx = 1;
+        c.gridy = 1;
         dialogoForm.add(lblNombreFoto, c);
 
-        c.gridx = 0; c.gridy = 2;
+        c.gridx = 0;
+        c.gridy = 2;
         dialogoForm.add(modalLabel("Tipo Sangre:"), c);
         c.gridx = 1;
         dialogoForm.add(cmbSangre, c);
 
-        c.gridx = 0; c.gridy = 3;
+        c.gridx = 0;
+        c.gridy = 3;
         dialogoForm.add(modalLabel("Color Ojos:"), c);
         c.gridx = 1;
         dialogoForm.add(txtOjos, c);
 
-        c.gridx = 0; c.gridy = 4;
+        c.gridx = 0;
+        c.gridy = 4;
         dialogoForm.add(modalLabel("Color Pelo:"), c);
         c.gridx = 1;
         dialogoForm.add(txtPelo, c);
 
-        c.gridx = 0; c.gridy = 5;
+        c.gridx = 0;
+        c.gridy = 5;
         dialogoForm.add(modalLabel("Conducta:"), c);
         c.gridx = 1;
         dialogoForm.add(txtConducta, c);
 
-        c.gridx = 0; c.gridy = 6;
+        c.gridx = 0;
+        c.gridy = 6;
         dialogoForm.add(modalLabel("Altura (m):"), c);
         c.gridx = 1;
         dialogoForm.add(txtAltura, c);
 
-        c.gridx = 0; c.gridy = 7;
+        c.gridx = 0;
+        c.gridy = 7;
         dialogoForm.add(modalLabel("Peso (kg):"), c);
         c.gridx = 1;
         dialogoForm.add(txtPeso, c);
@@ -440,23 +501,25 @@ public class BancoADNUI extends JFrame {
 
         btnEnviar.addActionListener(e -> {
             try {
-                double alt = Double.parseDouble(txtAltura.getText());
-                double pso = Double.parseDouble(txtPeso.getText());
+                double alt = Double.parseDouble(txtAltura.getText().trim().replace(" m", ""));
+                double pso = Double.parseDouble(txtPeso.getText().trim().replace(" kg", ""));
                 String res;
 
                 if (!esEdicion) {
                     res = ClienteSocket.enviar(
                             "REGISTRAR," + idUsuarioActual + "," + rutaFotoSeleccionada + "," + cmbSangre.getSelectedItem().toString() + ","
-                            + txtOjos.getText() + "," + txtPelo.getText() + "," + txtConducta.getText() + "," + alt + "," + pso
+                            + txtOjos.getText().trim() + "," + txtPelo.getText().trim() + "," + txtConducta.getText().trim() + "," + alt + "," + pso
                     );
                 } else {
+                    // Sincronizado exactamente con el orden de lectura del Servidor
                     res = ClienteSocket.enviar(
                             "EDITAR," + idUsuarioActual + "," + rutaFotoSeleccionada + "," + cmbSangre.getSelectedItem().toString() + ","
-                            + txtOjos.getText() + "," + txtPelo.getText() + "," + txtConducta.getText() + "," + alt + "," + pso + ",activo"
+                            + txtOjos.getText().trim() + "," + txtPelo.getText().trim() + "," + txtConducta.getText().trim() + "," + alt + "," + pso + ",activo"
                     );
                 }
 
                 if (!res.startsWith("ERROR")) {
+                    // Refrescar la tarjeta con los nuevos datos limpios
                     procesarYMostrarCard(ClienteSocket.enviar("CONSULTAR," + idUsuarioActual));
                     dialogoForm.dispose();
                 } else {
@@ -467,7 +530,8 @@ public class BancoADNUI extends JFrame {
             }
         });
 
-        c.gridx = 0; c.gridy = 8;
+        c.gridx = 0;
+        c.gridy = 8;
         c.gridwidth = 2;
         c.anchor = GridBagConstraints.CENTER;
         dialogoForm.add(btnEnviar, c);
