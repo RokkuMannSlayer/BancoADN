@@ -1,5 +1,7 @@
 package com.mycompany.bancoadn.red;
 
+import com.mycompany.bancoadn.concurrencia.SemaforoSistema;
+import com.mycompany.bancoadn.concurrencia.IdSemaforos;
 import com.mycompany.bancoadn.servicios.BancoADN;
 import com.mycompany.bancoadn.concurrencia.SemaforoUsuarios;
 
@@ -80,9 +82,15 @@ public class HiloCliente extends Thread {
 
         SemaforoUsuarios.salir(usuario);
 
-        synchronized (ServidorBancoADN.usuariosConectados) {
-
+        try {
+            
+            SemaforoSistema.adquirir(IdSemaforos.USUARIOS_CONECTADOS);
+            
             ServidorBancoADN.usuariosConectados.remove(usuario);
+            
+        } finally {
+            
+            SemaforoSistema.liberar(IdSemaforos.USUARIOS_CONECTADOS);
         }
         
         usuario = "Desconocido";
@@ -133,9 +141,15 @@ public class HiloCliente extends Thread {
 
                     usuario = email;
 
-                    synchronized (ServidorBancoADN.usuariosConectados) {
-
+                    try {
+                        
+                        SemaforoSistema.adquirir(IdSemaforos.USUARIOS_CONECTADOS);
+                        
                         ServidorBancoADN.usuariosConectados.put(usuario, true);
+                        
+                    } finally {
+                        
+                        SemaforoSistema.liberar(IdSemaforos.USUARIOS_CONECTADOS);
                     }
 
                     ServidorBancoADN.actualizarUsuarios();
@@ -241,9 +255,7 @@ public class HiloCliente extends Thread {
                         return "ERROR,Faltan datos";
                     }
 
-                    return banco.eliminarPerfil(
-                            Integer.parseInt(datos[1])
-                    );
+                    return banco.eliminarPerfil(Integer.parseInt(datos[1]));
 
                 // =========================
                 // LOGOUT

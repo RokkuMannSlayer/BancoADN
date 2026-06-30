@@ -1,5 +1,7 @@
 package com.mycompany.bancoadn.persistencia;
 
+import com.mycompany.bancoadn.concurrencia.IdSemaforos;
+import com.mycompany.bancoadn.concurrencia.SemaforoSistema;
 import com.mycompany.bancoadn.modelos.Usuario;
 import com.mycompany.bancoadn.modelos.PerfilGenetico;
 import com.mycompany.bancoadn.modelos.LogSistema;
@@ -23,17 +25,22 @@ public class GestorArchivos {
 
     private static void inicializarAdmin() {
 
-        List<Usuario> usuarios = leerUsuarios();
+        SemaforoSistema.adquirir(IdSemaforos.USUARIOS);
 
-        boolean existeAdmin = false;
+        try {
 
-        for (Usuario u : usuarios) {
+            List<Usuario> usuarios = leerUsuariosInterno();
 
-            if (u.getRol().equals("ADMIN")) {
-                existeAdmin = true;
-                break;
+            boolean existeAdmin = false;
+
+            for (Usuario u : usuarios) {
+
+                if ("ADMIN".equals(u.getRol())) {
+
+                    existeAdmin = true;
+                    break;
+                }
             }
-        }
 
         if (!existeAdmin) {
 
@@ -42,25 +49,57 @@ public class GestorArchivos {
             usuarios.add(admin);
 
             escribirArchivo(ARCHIVO_USUARIOS, usuarios);
-
-            guardarLog(new LogSistema( "ADMIN_DEFAULT", admin.getEmail(), "Admin principal creado"));
         }
+
+        } finally {
+
+        SemaforoSistema.liberar(IdSemaforos.USUARIOS);
+        }
+
+        // El log se guarda fuera del semáforo de usuarios
+        // para no mezclar recursos distintos.
+        guardarLog(new LogSistema("ADMIN_DEFAULT", "admin@banco.com", "Admin principal creado"));
     }
 
     // =========================
     // USUARIOS
     // =========================
-    public static synchronized void guardarUsuario(Usuario usuario) {
+    public static void guardarUsuario(Usuario usuario) {
 
-        List<Usuario> usuarios = leerUsuarios();
+        try {
 
-        usuarios.add(usuario);
+            SemaforoSistema.adquirir(IdSemaforos.USUARIOS);
 
-        escribirArchivo(ARCHIVO_USUARIOS, usuarios);
+            List<Usuario> usuarios = leerUsuariosInterno();
+
+            usuarios.add(usuario);
+
+            escribirArchivo(ARCHIVO_USUARIOS, usuarios);
+
+        } finally {
+
+            SemaforoSistema.liberar(IdSemaforos.USUARIOS);
+        }
+
+        guardarLog(new LogSistema("REGISTRO_USUARIO", usuario.getEmail(), "Usuario registrado"));
     }
 
-    public static synchronized List<Usuario> leerUsuarios() {
+    public static List<Usuario> leerUsuarios() {
 
+        try {
+
+            SemaforoSistema.adquirir(IdSemaforos.USUARIOS);
+
+            return leerUsuariosInterno();
+
+        } finally {
+
+            SemaforoSistema.liberar(IdSemaforos.USUARIOS);
+        }
+    }
+    
+    private static List<Usuario> leerUsuariosInterno() {
+        
         Object obj = leerArchivo(ARCHIVO_USUARIOS);
 
         if (obj == null) {
@@ -73,50 +112,100 @@ public class GestorArchivos {
     // =========================
     // PERFILES
     // =========================
-    public static synchronized void guardarPerfil(PerfilGenetico perfil) {
+    public static void guardarPerfil(PerfilGenetico perfil) {
 
-        List<PerfilGenetico> perfiles = leerPerfiles();
+        try {
 
-        perfiles.add(perfil);
+            SemaforoSistema.adquirir(IdSemaforos.PERFILES);
 
-        escribirArchivo(ARCHIVO_PERFILES, perfiles);
+            List<PerfilGenetico> perfiles = leerPerfilesInterno();
 
-        guardarLog(new LogSistema("REGISTRO_PERFIL", String.valueOf(perfil.getIdCliente()), "Perfil registrado" ));
+            perfiles.add(perfil);
+
+            escribirArchivo(ARCHIVO_PERFILES, perfiles);
+
+        } finally {
+
+            SemaforoSistema.liberar(IdSemaforos.PERFILES);
+        }
+
+        guardarLog(new LogSistema("REGISTRO_PERFIL", String.valueOf(perfil.getIdCliente()), "Perfil registrado"));
     }
 
-    public static synchronized List<PerfilGenetico> leerPerfiles() {
+    public static List<PerfilGenetico> leerPerfiles() {
 
+        try {
+
+            SemaforoSistema.adquirir(IdSemaforos.PERFILES);
+
+            return (List<PerfilGenetico>) leerArchivo(ARCHIVO_PERFILES);
+
+        } finally {
+
+            SemaforoSistema.liberar(IdSemaforos.PERFILES);
+        }
+    }
+
+    public static void actualizarPerfiles(List<PerfilGenetico> perfiles) {
+
+        try {
+
+            SemaforoSistema.adquirir(IdSemaforos.PERFILES);
+
+            escribirArchivo(ARCHIVO_PERFILES, perfiles);
+
+            guardarLog(new LogSistema("ACTUALIZAR_PERFILES", "SISTEMA", "Perfiles actualizados"));
+
+        } finally {
+
+            SemaforoSistema.liberar(IdSemaforos.PERFILES);
+        }
+    }
+    
+    private static List<PerfilGenetico> leerPerfilesInterno() {
+        
         return (List<PerfilGenetico>) leerArchivo(ARCHIVO_PERFILES);
-    }
-
-    public static synchronized void actualizarPerfiles(List<PerfilGenetico> perfiles) {
-
-        escribirArchivo(ARCHIVO_PERFILES, perfiles);
-
-        guardarLog(new LogSistema("ACTUALIZAR_PERFILES", "SISTEMA", "Perfiles actualizados"));
     }
 
     // =========================
     // LOGS
     // =========================
-    public static synchronized void guardarLog(LogSistema log) {
+    public static void guardarLog(LogSistema log) {
 
-        List<LogSistema> logs = leerLogs();
+        try {
 
-        logs.add(log);
+            SemaforoSistema.adquirir(IdSemaforos.LOGS);
 
-        escribirArchivo(ARCHIVO_LOGS, logs);
+            List<LogSistema> logs = leerLogsInterno();
+
+            logs.add(log);
+
+            escribirArchivo(ARCHIVO_LOGS, logs);
+
+        } finally {
+
+            SemaforoSistema.liberar(IdSemaforos.LOGS);
+        }
     }
 
-    public static synchronized List<LogSistema> leerLogs() {
+    public static List<LogSistema> leerLogs() {
 
-        return (List<LogSistema>) leerArchivo(ARCHIVO_LOGS);
+        try {
+
+            SemaforoSistema.adquirir(IdSemaforos.LOGS);
+
+            return (List<LogSistema>) leerArchivo(ARCHIVO_LOGS);
+
+        } finally {
+
+            SemaforoSistema.liberar(IdSemaforos.LOGS);
+        }
     }
 
     // =========================
     // GENERALES
     // =========================
-    private static synchronized void escribirArchivo(String archivo, Object objeto) {
+    private static void escribirArchivo(String archivo, Object objeto) {
 
             try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(archivo))) {
 
@@ -128,7 +217,7 @@ public class GestorArchivos {
             }
         }
 
-        private static synchronized Object leerArchivo(String archivo) {
+        private static Object leerArchivo(String archivo) {
 
         File file = new File(archivo);
 
@@ -150,5 +239,9 @@ public class GestorArchivos {
 
             return new ArrayList<>();
         }
+    }
+        
+    private static List<LogSistema> leerLogsInterno() {
+        return (List<LogSistema>) leerArchivo(ARCHIVO_LOGS);
     }
 }

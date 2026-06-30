@@ -1,6 +1,8 @@
 package com.mycompany.bancoadn.red;
 
 import com.mycompany.bancoadn.concurrencia.SemaforoUsuarios;
+import com.mycompany.bancoadn.concurrencia.SemaforoSistema;
+import com.mycompany.bancoadn.concurrencia.IdSemaforos;
 
 import javax.swing.*;
 import java.awt.*;
@@ -79,26 +81,35 @@ public class ServidorBancoADN {
         actualizarUsuarios();
     }
 
-    public static synchronized void actualizarUsuarios() {
+    public static void actualizarUsuarios() {
 
         SwingUtilities.invokeLater(() -> {
 
             StringBuilder sb = new StringBuilder();
 
             sb.append("===== SERVIDOR BANCO ADN =====\n\n");
-
+        
             sb.append("Usuarios conectados: ").append(SemaforoUsuarios.cantidadUsuarios()).append("\n\n");
 
-            if (usuariosConectados.isEmpty()) {
+            SemaforoSistema.adquirir(IdSemaforos.USUARIOS_CONECTADOS);
 
-                sb.append("Sin usuarios conectados");
+            try {
 
-            } else {
+                if (usuariosConectados.isEmpty()) {
 
-                for (String usuario : usuariosConectados.keySet()) {
+                    sb.append("Sin usuarios conectados");
 
-                    sb.append("• ").append(usuario).append("\n");
+                } else {
+
+                    for (String usuario : usuariosConectados.keySet()) {
+
+                        sb.append("• ").append(usuario).append("\n");
+                    }
                 }
+
+            } finally {
+
+                SemaforoSistema.liberar(IdSemaforos.USUARIOS_CONECTADOS);
             }
 
             areaUsuarios.setText(sb.toString());

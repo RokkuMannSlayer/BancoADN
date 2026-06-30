@@ -1,5 +1,8 @@
 package com.mycompany.bancoadn.red;
 
+import com.mycompany.bancoadn.concurrencia.IdSemaforos;
+import com.mycompany.bancoadn.concurrencia.SemaforoSistema;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -7,7 +10,7 @@ import java.net.Socket;
 
 public class ClienteSocket {
 
-    private static String HOST = "localhost"; //A futuro cambiamos la IP para el acceso a otras computadoras al servidor. -Rokku
+    private static String HOST = "localhost";
     private static final int PUERTO = 5000;
 
     private static Socket socket;
@@ -15,28 +18,46 @@ public class ClienteSocket {
     private static BufferedReader entrada;
 
     public static void setHost(String host) {
+
         HOST = host;
     }
 
-    public static synchronized void conectar() throws Exception {
+    public static void conectar() throws Exception {
 
-        if (socket != null && socket.isConnected() && !socket.isClosed()) {
-
-            return;
-        }
-
-        socket = new Socket(HOST, PUERTO);
-
-        salida = new PrintWriter(socket.getOutputStream(), true);
-
-        entrada = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-    }
-
-    public static synchronized String enviar(String mensaje) {
+        SemaforoSistema.adquirir(IdSemaforos.SOCKET_CLIENTE);
 
         try {
 
-            conectar();
+            if (socket != null && socket.isConnected() && !socket.isClosed()) {
+                return;
+            }
+
+            socket = new Socket(HOST, PUERTO);
+
+            salida = new PrintWriter(socket.getOutputStream(), true);
+
+            entrada = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+        } finally {
+
+            SemaforoSistema.liberar(IdSemaforos.SOCKET_CLIENTE);
+        }
+    }
+
+    public static String enviar(String mensaje) {
+
+        SemaforoSistema.adquirir(IdSemaforos.SOCKET_CLIENTE);
+
+        try {
+
+            if (socket == null || socket.isClosed() || !socket.isConnected()) {
+
+                socket = new Socket(HOST, PUERTO);
+
+                salida = new PrintWriter(socket.getOutputStream(), true);
+
+                entrada = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            }
 
             salida.println(mensaje);
 
@@ -64,10 +85,16 @@ public class ClienteSocket {
         } catch (Exception e) {
 
             return "ERROR," + e.getMessage();
+
+        } finally {
+
+            SemaforoSistema.liberar(IdSemaforos.SOCKET_CLIENTE);
         }
     }
 
-    public static synchronized void desconectar() {
+    public static void desconectar() {
+
+        SemaforoSistema.adquirir(IdSemaforos.SOCKET_CLIENTE);
 
         try {
 
@@ -76,9 +103,17 @@ public class ClienteSocket {
                 socket.close();
             }
 
+            socket = null;
+            salida = null;
+            entrada = null;
+
         } catch (Exception e) {
 
             System.out.println("Error cerrando socket: " + e.getMessage());
+
+        } finally {
+
+            SemaforoSistema.liberar(IdSemaforos.SOCKET_CLIENTE);
         }
     }
 }

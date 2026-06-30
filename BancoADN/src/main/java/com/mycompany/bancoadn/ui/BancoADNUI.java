@@ -94,7 +94,14 @@ public class BancoADNUI extends JFrame {
         panelContenidoPrincipal.setBorder(new EmptyBorder(5, 25, 15, 25));
 
         String[] columnas = {"Información de los Perfiles Registrados en el Sistema"};
-        modeloTabla = new DefaultTableModel(columnas, 0);
+        
+        modeloTabla = new DefaultTableModel(columnas, 0){
+            
+            public boolean IsCellEditable(int row, int column){
+                return false;
+            }   
+        };
+        
         tablaDatos = new JTable(modeloTabla);
         tablaDatos.setBackground(new Color(25, 25, 25));
         tablaDatos.setForeground(Color.WHITE);
