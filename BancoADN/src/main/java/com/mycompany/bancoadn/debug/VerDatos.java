@@ -23,8 +23,7 @@ public class VerDatos {
 
         System.out.println("\n===== USUARIOS =====");
 
-        List<Usuario> usuarios =
-                GestorArchivos.leerUsuarios();
+        List<Usuario> usuarios = GestorArchivos.leerUsuarios();
 
         if (usuarios.isEmpty()) {
 
@@ -34,13 +33,7 @@ public class VerDatos {
 
         for (Usuario u : usuarios) {
 
-            System.out.println(
-                    "ID: " + u.getIdUsuario()
-                    + " | Nombre: " + u.getNombre()
-                    + " | Email: " + u.getEmail()
-                    + " | DNI: " + u.getDni()
-                    + " | Rol: " + u.getRol()
-            );
+            System.out.println("ID: " + u.getIdUsuario() + " | Nombre: " + u.getNombre() + " | Email: " + u.getEmail() + " | DNI: " + u.getDni() + " | Rol: " + u.getRol());
         }
     }
 
@@ -51,8 +44,7 @@ public class VerDatos {
 
         System.out.println("\n===== PERFILES =====");
 
-        List<PerfilGenetico> perfiles =
-                GestorArchivos.leerPerfiles();
+        List<PerfilGenetico> perfiles = GestorArchivos.leerPerfiles();
 
         if (perfiles.isEmpty()) {
 
@@ -62,20 +54,7 @@ public class VerDatos {
 
         for (PerfilGenetico p : perfiles) {
 
-            System.out.println(
-                    "ID Perfil: " + p.getIdPerfil()
-                    + " | Foto: " + p.getFotoPerfil()
-                    + " | Tipo Sangre: " + p.getTipoSangre()
-                    + " | Ojos: " + p.getColorOjos()
-                    + " | Pelo: " + p.getColorPelo()
-                    + " | Conducta: " + p.getTendenciaConductual()
-                    + " | Altura: " + p.getAltura()
-                    + " | Peso: " + p.getPeso()
-                    + " | IMC: " + String.format("%.2f", p.getImc())
-                    + " | Estado: " + p.getEstado()
-                    + " | ID Cliente: " + p.getIdCliente()
-                    + " | ID Admin: " + p.getIdAdmin()
-            );
+            System.out.println("ID Perfil: " + p.getIdPerfil() + " | Foto: " + p.getFotoPerfil() + " | Tipo Sangre: " + p.getTipoSangre() + " | Ojos: " + p.getColorOjos() + " | Pelo: " + p.getColorPelo() + " | Conducta: " + p.getTendenciaConductual() + " | Altura: " + p.getAltura() + " | Peso: " + p.getPeso() + " | IMC: " + String.format("%.2f", p.getImc()) + " | Estado: " + p.getEstado() + " | ID Cliente: " + p.getIdCliente() + " | ID Admin: " + p.getIdAdmin());
         }
     }
 
@@ -86,8 +65,7 @@ public class VerDatos {
 
         System.out.println("\n===== LOGS =====");
 
-        List<LogSistema> logs =
-                GestorArchivos.leerLogs();
+        List<LogSistema> logs = GestorArchivos.leerLogs();
 
         if (logs.isEmpty()) {
 
@@ -97,12 +75,7 @@ public class VerDatos {
 
         for (LogSistema l : logs) {
 
-            System.out.println(
-                    "Fecha: " + l.getFecha()
-                    + " | Acción: " + l.getAccion()
-                    + " | Usuario: " + l.getUsuario()
-                    + " | Descripción: " + l.getDescripcion()
-            );
+            System.out.println("Fecha: " + l.getFecha() + " | Acción: " + l.getAccion() + " | Usuario: " + l.getUsuario() + " | Descripción: " + l.getDescripcion());
         }
     }
 }

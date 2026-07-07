@@ -42,14 +42,14 @@ public class GestorArchivos {
                 }
             }
 
-        if (!existeAdmin) {
+            if (!existeAdmin) {
 
-            Usuario admin = new Usuario(1, "Admin Principal", "admin@banco.com", "1234", "00000000", "ADMIN");
+                Usuario admin = new Usuario(1, "Admin Principal", "admin@banco.com", "1234", "00000000", "ADMIN");
 
-            usuarios.add(admin);
+                usuarios.add(admin);
 
-            escribirArchivo(ARCHIVO_USUARIOS, usuarios);
-        }
+                escribirArchivo(ARCHIVO_USUARIOS, usuarios);
+            }
 
         } finally {
 
@@ -207,17 +207,17 @@ public class GestorArchivos {
     // =========================
     private static void escribirArchivo(String archivo, Object objeto) {
 
-            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(archivo))) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(archivo))) {
 
-                oos.writeObject(objeto);
+            oos.writeObject(objeto);
 
-            } catch (Exception e) {
+        } catch (Exception e) {
 
-                System.out.println( "Error escribiendo archivo: " + e.getMessage());
-            }
+            System.out.println( "Error escribiendo archivo: " + e.getMessage());
         }
+    }
 
-        private static Object leerArchivo(String archivo) {
+    private static Object leerArchivo(String archivo) {
 
         File file = new File(archivo);
 

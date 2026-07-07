@@ -506,42 +506,58 @@ public class BancoADNUI extends JFrame {
         btnEnviar.setForeground(Color.WHITE);
 
         btnEnviar.addActionListener(e -> {
-            try {
-                String alt = txtAltura.getText().trim().replace(" m", "");
-                String pso = txtPeso.getText().trim().replace(" kg", "");
+        try {
 
-                Double.parseDouble(alt);
-                Double.parseDouble(pso);
+            String ojos = txtOjos.getText().trim();
+            String pelo = txtPelo.getText().trim();
+            String conducta = txtConducta.getText().trim();
+            String alt = txtAltura.getText().trim().replace(" m", "");
+            String pso = txtPeso.getText().trim().replace(" kg", "");
+            String sangre = cmbSangre.getSelectedItem().toString();
 
-                String ojos = txtOjos.getText().trim();
-                String pelo = txtPelo.getText().trim();
-                String conducta = txtConducta.getText().trim();
-                String sangre = cmbSangre.getSelectedItem().toString();
+            // ==========================
+            // VALIDACIÓN CAMPOS VACÍOS
+            // ==========================
+            if (ojos.isEmpty() ||
+                pelo.isEmpty() ||
+                conducta.isEmpty() ||
+                alt.isEmpty() ||
+                pso.isEmpty()) {
 
-                String res;
-                if (!esEdicion) {
-                    res = ClienteSocket.enviar(
-                            "REGISTRAR," + idUsuarioActual + "," + rutaFotoSeleccionada + "," + sangre + ","
-                            + ojos + "," + pelo + "," + conducta + "," + alt + "," + pso
-                    );
-                } else {
-                    // Enviamos idPerfilActual para impactar correctamente en la clave primaria de la BD
-                    res = ClienteSocket.enviar(
-                            "EDITAR," + idPerfilActual + "," + rutaFotoSeleccionada + "," + sangre + ","
-                            + ojos + "," + pelo + "," + conducta + "," + alt + "," + pso + ",activo"
-                    );
-                }
+                JOptionPane.showMessageDialog(dialogoForm, "Todos los campos son obligatorios.", "Campos incompletos", JOptionPane.WARNING_MESSAGE);
 
-                if (res != null && !res.startsWith("ERROR")) {
-                    JOptionPane.showMessageDialog(dialogoForm, "¡Perfil actualizado correctamente!");
-                    procesarYMostrarCard(ClienteSocket.enviar("CONSULTAR," + idUsuarioActual));
-                    dialogoForm.dispose();
-                } else {
-                    JOptionPane.showMessageDialog(dialogoForm, "Error devuelto por el Servidor:\n" + res);
-                }
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(dialogoForm, "Campos numéricos inválidos. Use formato '1.75' y '80.0'.");
+                return;
             }
+
+            Double.parseDouble(alt);
+            Double.parseDouble(pso);
+
+            String res;
+
+            if (!esEdicion) {
+
+                res = ClienteSocket.enviar("REGISTRAR," + idUsuarioActual + "," + rutaFotoSeleccionada + "," + sangre + "," + ojos + "," + pelo + "," + conducta + "," + alt + "," + pso);
+
+            } else {
+
+                res = ClienteSocket.enviar("EDITAR," + idPerfilActual + "," + rutaFotoSeleccionada + "," + sangre + "," + ojos + "," + pelo + "," + conducta + "," + alt + "," + pso + ",activo");
+            }
+
+            if (res != null && !res.startsWith("ERROR")) {
+
+                JOptionPane.showMessageDialog(dialogoForm, "¡Perfil actualizado correctamente!");
+                procesarYMostrarCard(ClienteSocket.enviar("CONSULTAR," + idUsuarioActual));
+                dialogoForm.dispose();
+
+            } else {
+
+                JOptionPane.showMessageDialog(dialogoForm, "Error devuelto por el Servidor:\n" + res);
+            }
+
+        } catch (NumberFormatException ex) {
+
+            JOptionPane.showMessageDialog(dialogoForm, "Altura y peso deben ser valores numéricos.\nEjemplo: 1.75 y 80.0", "Datos inválidos", JOptionPane.ERROR_MESSAGE);
+        }
         });
 
         c.gridx = 0;

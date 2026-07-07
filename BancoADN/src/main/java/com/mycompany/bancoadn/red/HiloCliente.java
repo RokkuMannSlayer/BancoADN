@@ -180,16 +180,7 @@ public class HiloCliente extends Thread {
                         return "ERROR,Faltan datos";
                     }
 
-                    return banco.registrarPerfil(
-                            Integer.parseInt(datos[1]),
-                            datos[2],
-                            datos[3],
-                            datos[4],
-                            datos[5],
-                            datos[6],
-                            Double.parseDouble(datos[7]),
-                            Double.parseDouble(datos[8])
-                    );
+                    return banco.registrarPerfil(Integer.parseInt(datos[1]), datos[2], datos[3], datos[4], datos[5], datos[6], Double.parseDouble(datos[7]), Double.parseDouble(datos[8]));
 
                 // =========================
                 // CONSULTAR PERFIL POR ID
@@ -225,18 +216,7 @@ public class HiloCliente extends Thread {
                         return "ERROR,Faltan datos";
                     }
 
-                    return banco.editarPerfilGenetico(
-                            Integer.parseInt(datos[1]),
-                            datos[2],
-                            datos[3],
-                            datos[4],
-                            datos[5],
-                            datos[6],
-                            Double.parseDouble(datos[7]),
-                            Double.parseDouble(datos[8]),
-                            datos[9],
-                            1
-                    );
+                    return banco.editarPerfilGenetico(Integer.parseInt(datos[1]), datos[2], datos[3], datos[4], datos[5], datos[6], Double.parseDouble(datos[7]), Double.parseDouble(datos[8]), datos[9], 1);
 
                 // =========================
                 // LISTAR

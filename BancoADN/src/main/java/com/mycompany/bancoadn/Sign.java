@@ -35,8 +35,7 @@ public class Sign {
 
             panel.setBackground(Color.BLACK);
 
-            JLabel iconTitle =
-                    new JLabel("", SwingConstants.CENTER);
+            JLabel iconTitle = new JLabel("", SwingConstants.CENTER);
 
             iconTitle.setIcon(new ImageIcon("dna_146c.gif"));
 
@@ -106,8 +105,7 @@ public class Sign {
 
             panel.setBackground(Color.BLACK);
 
-            JLabel lblTitulo =
-                    new JLabel("", SwingConstants.CENTER);
+            JLabel lblTitulo = new JLabel("", SwingConstants.CENTER);
 
             lblTitulo.setIcon(new ImageIcon("dna_146c.gif"));
 
@@ -189,8 +187,7 @@ public class Sign {
             }
 
             // SOCKET
-            String respuesta =
-                    ClienteSocket.enviar("LOGIN," + usuario + "," + password);
+            String respuesta = ClienteSocket.enviar("LOGIN," + usuario + "," + password);
 
             // ERROR
             if (respuesta == null || respuesta.startsWith("ERROR")) {
@@ -253,8 +250,7 @@ public class Sign {
 
             JPanel panel = new JPanel(new BorderLayout());
 
-            panel.setBorder(
-                    BorderFactory.createEmptyBorder(20, 20, 20, 20));
+            panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
             panel.setBackground(Color.BLACK);
 

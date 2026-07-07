@@ -74,16 +74,7 @@ public class BancoADN {
     // =========================
     // REGISTRAR PERFIL
     // =========================
-    public String registrarPerfil(
-        int idCliente,
-        String fotoPerfil,
-        String tipoSangre,
-        String colorOjos,
-        String colorPelo,
-        String tendencia,
-        double altura,
-        double peso
-    ) {
+    public String registrarPerfil(int idCliente, String fotoPerfil, String tipoSangre, String colorOjos, String colorPelo, String tendencia, double altura, double peso) {
 
         try {
 
@@ -105,19 +96,7 @@ public class BancoADN {
                 }
             }
 
-            PerfilGenetico perfil = new PerfilGenetico(
-                nuevoId,
-                fotoPerfil,
-                TipoSangre.valueOf(tipoSangre),
-                colorOjos,
-                colorPelo,
-                tendencia,
-                altura,
-                peso,
-                "activo",
-                idCliente,
-                1
-            );
+            PerfilGenetico perfil = new PerfilGenetico(nuevoId, fotoPerfil, TipoSangre.valueOf(tipoSangre), colorOjos, colorPelo, tendencia, altura, peso, "activo", idCliente, 1);
 
             GestorArchivos.guardarPerfil(perfil);
 
@@ -158,27 +137,7 @@ public class BancoADN {
 
                 if (p.getIdCliente() == idCliente && p.getEstado().equals("activo")) {
 
-                    return "ID Perfil: " + p.getIdPerfil()
-                    + " | Cliente: "
-                    + nombre
-                    + " | DNI: "
-                    + dni
-                    + " | Sangre: "
-                    + p.getTipoSangre()
-                    + " | Ojos: "
-                    + p.getColorOjos()
-                    + " | Pelo: "
-                    + p.getColorPelo()
-                    + " | Conducta: "
-                    + p.getTendenciaConductual()
-                    + " | Altura: "
-                    + p.getAltura()
-                    + " | Peso: "
-                    + p.getPeso()
-                    + " | IMC: "
-                    + String.format("%.2f", p.getImc())
-                    + " | Estado: "
-                    + p.getEstado();
+                    return "ID Perfil: " + p.getIdPerfil() + " | Cliente: " + nombre + " | DNI: " + dni + " | Sangre: " + p.getTipoSangre() + " | Ojos: " + p.getColorOjos() + " | Pelo: " + p.getColorPelo() + " | Conducta: " + p.getTendenciaConductual() + " | Altura: " + p.getAltura() + " | Peso: " + p.getPeso() + " | IMC: " + String.format("%.2f", p.getImc()) + " | Estado: " + p.getEstado();
                 }
             }
 
@@ -207,17 +166,7 @@ public class BancoADN {
                         }
                     }
 
-                    return "ID Perfil: " + p.getIdPerfil()
-                            + " | Cliente: " + nombre
-                            + " | DNI: " + dni
-                            + " | Sangre: " + p.getTipoSangre()
-                            + " | Ojos: " + p.getColorOjos()
-                            + " | Pelo: " + p.getColorPelo()
-                            + " | Conducta: " + p.getTendenciaConductual()
-                            + " | Altura: " + p.getAltura()
-                            + " | Peso: " + p.getPeso()
-                            + " | IMC: " + String.format("%.2f", p.getImc())
-                            + " | Estado: " + p.getEstado();
+                    return "ID Perfil: " + p.getIdPerfil() + " | Cliente: " + nombre + " | DNI: " + dni + " | Sangre: " + p.getTipoSangre() + " | Ojos: " + p.getColorOjos() + " | Pelo: " + p.getColorPelo() + " | Conducta: " + p.getTendenciaConductual() + " | Altura: " + p.getAltura() + " | Peso: " + p.getPeso() + " | IMC: " + String.format("%.2f", p.getImc()) + " | Estado: " + p.getEstado();
                 }
             }
             return "Perfil no existe";
@@ -229,18 +178,7 @@ public class BancoADN {
     // =========================
     // EDITAR PERFIL
     // =========================
-    public String editarPerfilGenetico(
-        int idPerfil,
-        String fotoPerfil,
-        String tipoSangre,
-        String colorOjos,
-        String colorPelo,
-        String tendencia,
-        double altura,
-        double peso,
-        String estado,
-        int idAdmin
-    ) {
+    public String editarPerfilGenetico(int idPerfil, String fotoPerfil, String tipoSangre, String colorOjos, String colorPelo, String tendencia, double altura, double peso, String estado, int idAdmin) {
 
         try {
 
@@ -351,28 +289,7 @@ public class BancoADN {
                     }
                 }
 
-                sb.append("ID: ")
-                    .append(p.getIdPerfil())
-
-                    .append(" | Cliente: ")
-                    .append(nombre)
-
-                    .append(" | Sangre: ")
-                    .append(p.getTipoSangre())
-
-                    .append(" | Ojos: ")
-                    .append(p.getColorOjos())
-
-                    .append(" | Pelo: ")
-                    .append(p.getColorPelo())
-
-                    .append(" | IMC: ")
-                    .append(String.format("%.2f", p.getImc()))
-
-                    .append(" | Estado: ")
-                    .append(p.getEstado())
-
-                    .append("\n");
+                sb.append("ID: ").append(p.getIdPerfil()).append(" | Cliente: ").append(nombre).append(" | Sangre: ").append(p.getTipoSangre()).append(" | Ojos: ").append(p.getColorOjos()).append(" | Pelo: ").append(p.getColorPelo()).append(" | IMC: ").append(String.format("%.2f", p.getImc())).append(" | Estado: ").append(p.getEstado()).append("\n");
             }
 
             return sb.toString();
